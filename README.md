@@ -114,4 +114,4 @@ node server.mjs
 Then visit `http://localhost:5173`.
 
 Use Freighter on Stellar Testnet and fund the account from the Stellar Laboratory friendbot before sending a transaction.
-\n\n## Live demo\nLive demo URL: <add Vercel/Netlify URL here>\n
+\n\n## Live demo\nLive demo URL: https://frontend-eta-seven-24.vercel.app\n
