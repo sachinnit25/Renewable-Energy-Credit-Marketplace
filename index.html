@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>REC Marketplace | Stellar Testnet</title>
+    <title>REC Marketplace | Stellar Testnet & Soroban (Level 2)</title>
     <link rel="preconnect" href="https://esm.sh" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -11,43 +11,59 @@
     <main class="app-shell">
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Stellar Testnet</p>
+          <p class="eyebrow">Stellar Testnet & Soroban Smart Contracts</p>
           <h1>Renewable Energy Credit Marketplace</h1>
           <p>
-            Connect Freighter, inspect your XLM balance, and send a testnet
-            payment that simulates purchasing renewable energy credits.
+            Connect via Freighter or Stellar Web Wallet, inspect XLM balances, invoke Soroban smart contracts, and stream real-time on-chain events.
           </p>
         </div>
         <div class="market-stats" aria-label="Marketplace summary">
           <div>
-            <span class="stat-value">4</span>
-            <span class="stat-label">REC lots</span>
+            <span class="stat-value" id="onchainRecCount">4</span>
+            <span class="stat-label">On-chain RECs</span>
           </div>
           <div>
             <span class="stat-value">Testnet</span>
             <span class="stat-label">Network</span>
           </div>
           <div>
-            <span class="stat-value">XLM</span>
-            <span class="stat-label">Settlement</span>
+            <span class="stat-value">Soroban</span>
+            <span class="stat-label">Smart Contract</span>
           </div>
         </div>
       </section>
 
       <section class="dashboard">
+        <!-- Wallet Selection & Panel -->
         <aside class="wallet-panel" aria-label="Wallet controls">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Wallet</p>
-              <h2>Freighter connection</h2>
+              <p class="eyebrow">Multi-Wallet Access</p>
+              <h2>Wallet connection</h2>
             </div>
             <span id="connectionBadge" class="badge muted">Disconnected</span>
+          </div>
+
+          <!-- Multi Wallet Selector -->
+          <div class="wallet-type-selector">
+            <label for="walletTypeSelect">Wallet Provider:</label>
+            <select id="walletTypeSelect">
+              <option value="freighter">Freighter Extension (Recommended)</option>
+              <option value="web">Stellar Web / Testnet Keypair</option>
+            </select>
+          </div>
+
+          <!-- Secret Key Input for Web Wallet fallback -->
+          <div id="secretKeyGroup" class="secret-key-group hidden">
+            <label for="secretKeyInput">Testnet Secret Key (S...):</label>
+            <input id="secretKeyInput" type="password" placeholder="S... (Leave blank to auto-generate)" />
+            <button id="generateKeyBtn" type="button" class="ghost">Generate New Testnet Key</button>
           </div>
 
           <div id="walletAddress" class="address-box">No wallet connected</div>
 
           <div class="wallet-actions">
-            <button id="connectBtn" type="button">Connect Freighter</button>
+            <button id="connectBtn" type="button">Connect Wallet</button>
             <button id="disconnectBtn" class="secondary" type="button" disabled>
               Disconnect
             </button>
@@ -58,36 +74,65 @@
             <strong id="balanceValue">--</strong>
           </div>
 
-          <button id="refreshBalanceBtn" class="ghost" type="button" disabled>
-            Refresh balance
-          </button>
+          <div class="wallet-actions">
+            <button id="refreshBalanceBtn" class="ghost" type="button" disabled>
+              Refresh balance
+            </button>
+            <button id="fundAccountBtn" class="ghost" type="button">
+              Fund via Friendbot
+            </button>
+          </div>
 
           <div class="testnet-key-card">
-            <p class="eyebrow">Testnet demo address</p>
+            <p class="eyebrow">Testnet Demo Key</p>
             <div id="testnetKeyValue" class="address-box">GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P</div>
             <div class="wallet-actions testnet-actions">
               <button id="copyKeyBtn" type="button">Copy address</button>
               <button id="fillDestinationBtn" class="secondary" type="button">Fill destination</button>
             </div>
-            <a id="fundFriendbot" class="ghost" target="_blank" rel="noreferrer" href="https://friendbot.stellar.org/?addr=GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P">
-              Fund via Friendbot
-            </a>
+          </div>
+
+          <!-- Categorized Error Handling Display -->
+          <div id="errorCategoryCard" class="error-card hidden">
+            <h4 id="errorCategoryTitle">Error Detected</h4>
+            <p id="errorCategoryMessage"></p>
           </div>
 
           <p id="walletMessage" class="message" role="status"></p>
         </aside>
 
-        <section class="transaction-panel" aria-label="REC purchase transaction">
+        <!-- Transaction & Soroban Contract Panel -->
+        <section class="transaction-panel" aria-label="REC purchase & Soroban contract">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Transaction flow</p>
-              <h2>Send testnet XLM</h2>
+              <p class="eyebrow">Soroban Smart Contract</p>
+              <h2>On-Chain Interactions</h2>
+            </div>
+            <span id="contractBadge" class="badge success">Soroban Active</span>
+          </div>
+
+          <!-- Deployed Contract Metadata Card -->
+          <div class="contract-metadata-card">
+            <div class="meta-item">
+              <span class="meta-label">Contract ID:</span>
+              <span id="contractIdDisplay" class="meta-value">CCZ67REC777777777777777777777777777777777777777777777777</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Soroban RPC:</span>
+              <span class="meta-value">https://soroban-testnet.stellar.org</span>
             </div>
           </div>
 
+          <!-- Contract Action Tabs/Buttons -->
+          <div class="action-mode-selector">
+            <button id="modePaymentBtn" class="tab-btn active" type="button">Send XLM Payment</button>
+            <button id="modeContractBtn" class="tab-btn" type="button">Invoke Soroban Contract</button>
+          </div>
+
+          <!-- Form 1: Native Payment Form -->
           <form id="paymentForm">
             <label>
-              Destination address
+              Destination Address
               <input
                 id="destinationInput"
                 name="destination"
@@ -116,70 +161,86 @@
                 id="memoInput"
                 name="memo"
                 maxlength="28"
-                value="REC marketplace purchase"
+                value="REC purchase settlement"
               />
             </label>
 
-            <button id="sendBtn" type="submit" disabled>Send XLM on Testnet</button>
+            <button id="sendBtn" type="submit" disabled>Send XLM Payment</button>
           </form>
 
+          <!-- Form 2: Soroban Smart Contract Form -->
+          <form id="contractForm" class="hidden">
+            <label>
+              Select Contract Method:
+              <select id="contractMethodSelect">
+                <option value="buy_rec">buy_rec(buyer, rec_id)</option>
+                <option value="create_rec">create_rec(creator, id, mwh, price)</option>
+                <option value="get_rec">get_rec(rec_id)</option>
+              </select>
+            </label>
+
+            <label>
+              REC Lot ID
+              <input id="recIdInput" type="number" min="1" value="101" required />
+            </label>
+
+            <label id="mwhLabel" class="hidden">
+              Capacity (MWh)
+              <input id="recMwhInput" type="number" min="1" value="50" />
+            </label>
+
+            <button id="invokeContractBtn" type="submit" disabled>Call Soroban Smart Contract</button>
+          </form>
+
+          <!-- Transaction Status Box -->
           <div id="txFeedback" class="tx-feedback idle">
-            Connect Freighter to begin a testnet transaction.
+            Connect wallet to begin transaction or contract invocation.
           </div>
         </section>
       </section>
 
+      <!-- Real-Time Event Stream Log -->
+      <section class="events-section">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Live On-Chain Telemetry</p>
+            <h2>Real-Time Soroban & Horizon Event Stream</h2>
+          </div>
+          <span class="live-pulse">🔴 LIVE</span>
+        </div>
+        <div id="eventLogContainer" class="event-log-container">
+          <div class="event-row system">
+            <span class="event-time">[System]</span>
+            <span class="event-text">Real-time Soroban RPC & Horizon event listener initialized on Stellar Testnet.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Renewable Energy Credit Grid -->
       <section class="credit-grid" aria-label="Renewable energy credit listings">
         <article class="credit-card">
           <span class="source solar">Solar</span>
-          <h3>Rajasthan Solar REC</h3>
-          <p>1 MWh generated from a utility solar facility.</p>
-          <div><strong>1.0 XLM</strong><span>Available now</span></div>
+          <h3>Rajasthan Solar REC (Lot #101)</h3>
+          <p>1 MWh generated from utility solar facility. Soroban Verified.</p>
+          <div><strong>1.0 XLM</strong><button class="buy-rec-btn" data-id="101">Buy REC #101</button></div>
         </article>
         <article class="credit-card">
           <span class="source wind">Wind</span>
-          <h3>Gujarat Wind REC</h3>
+          <h3>Gujarat Wind REC (Lot #102)</h3>
           <p>Verified wind production from coastal turbines.</p>
-          <div><strong>1.4 XLM</strong><span>Limited lot</span></div>
+          <div><strong>1.4 XLM</strong><button class="buy-rec-btn" data-id="102">Buy REC #102</button></div>
         </article>
         <article class="credit-card">
           <span class="source hydro">Hydro</span>
-          <h3>Himalayan Micro Hydro</h3>
+          <h3>Himalayan Micro Hydro (Lot #103)</h3>
           <p>Community-scale hydroelectric energy credit.</p>
-          <div><strong>0.8 XLM</strong><span>Best value</span></div>
+          <div><strong>0.8 XLM</strong><button class="buy-rec-btn" data-id="103">Buy REC #103</button></div>
         </article>
         <article class="credit-card">
           <span class="source biomass">Bio</span>
-          <h3>Punjab Biomass REC</h3>
+          <h3>Punjab Biomass REC (Lot #104)</h3>
           <p>Agricultural residue converted into renewable power.</p>
-          <div><strong>1.2 XLM</strong><span>New listing</span></div>
-        </article>
-      </section>
-
-      <section class="info-section" aria-label="Project information">
-        <article class="info-card">
-          <p class="eyebrow">About this demo</p>
-          <h2>Built to showcase a testnet renewable energy credit marketplace</h2>
-          <p>
-            This prototype demonstrates how a sustainability marketplace could feel
-            on Stellar: users connect a wallet, inspect balances, and simulate REC
-            purchases through simple testnet transactions.
-          </p>
-        </article>
-        <article class="info-card">
-          <p class="eyebrow">What you can explore</p>
-          <ul>
-            <li>How Freighter wallet authentication works in a web app</li>
-            <li>How a balance check and payment flow look on Stellar Testnet</li>
-            <li>How a marketplace experience can be framed around real-world clean energy assets</li>
-          </ul>
-        </article>
-        <article class="info-card">
-          <p class="eyebrow">Testnet setup</p>
-          <p>
-            Make sure Freighter is set to <strong>Stellar Testnet</strong>, not Public.
-            Open the extension, switch the network, then reload this page before connecting.
-          </p>
+          <div><strong>1.2 XLM</strong><button class="buy-rec-btn" data-id="104">Buy REC #104</button></div>
         </article>
       </section>
     </main>
