@@ -1,13 +1,18 @@
-﻿# Contributing
+# Contributing
 
-Pull requests welcome. To run the project locally:
+Contributions are welcome!
 
-1. Install dependencies: 
-pm install
-2. Run tests: 
-pm test
-3. Run Hardhat node: 
-px hardhat node
-4. Deploy locally: 
-px hardhat run scripts/deploy.js --network localhost
+### Local Development Setup
 
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the local development server:
+```bash
+npm start
+```
+
+3. Open your browser with the Freighter wallet browser extension installed and set to **Stellar Testnet**.
+4. Test wallet connection, balance retrieval, and testnet payment flows.

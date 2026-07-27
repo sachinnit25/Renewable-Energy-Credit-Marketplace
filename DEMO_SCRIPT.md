@@ -1,12 +1,13 @@
 Demo video script (1–2 minutes)
 
-1. Intro (5–8s): brief title slide "REC Marketplace — Demo" and your name.
-2. Connect wallet (15s): show `frontend/index.html`, click "Connect Freighter", show wallet address and balance.
-3. Create & purchase (30s): run `npx hardhat node` and `npx hardhat run scripts/deploy.js --network localhost`; then run `node scripts/interact.js` (with `.env` configured) to create a listing and purchase it; show terminal output and copy tx hashes.
-4. CI & tests (20s): open GitHub Actions run (or run `npm test`) and show passing tests (3+). Capture terminal output screenshot.
-5. Mobile responsive (10s): resize browser or emulate mobile and show the UI adapts; capture screenshot.
-6. Closing (5s): point to repo URL and live demo link.
+1. Intro (5–8s): Brief title "Renewable Energy Credit Marketplace — Stellar Testnet Level 1 Demo".
+2. Connect Wallet (15s): Open the app in browser with Freighter installed on Stellar Testnet. Click "Connect Freighter", show the connected public key and fetched XLM balance.
+3. Transaction Flow (30s): Select a REC lot, fill in a testnet destination address (or click "Fill destination"), enter XLM amount, and submit. Approve the transaction popup in Freighter. Show the success feedback banner with the Stellar Expert explorer link.
+4. Disconnect & Verification (15s): Click "Disconnect" to verify session cleanup. Show transaction hash on Stellar Expert testnet explorer.
+5. Mobile Responsiveness (10s): Resize browser or emulate mobile view to demonstrate responsive UI layout.
+6. Closing (5s): Show GitHub repository link and demo overview.
 
 Recording tips:
-- Use a screen recorder (e.g., OBS, QuickTime, Loom). Keep clips short and narrated.
-- Highlight tx hashes and URLs in the video and include them in the video description.
+- Use a screen recorder (Loom, OBS, or browser recorder).
+- Keep Freighter set to **Stellar Testnet** before recording.
+- Highlight the transaction hash URL.

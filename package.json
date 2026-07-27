@@ -3,16 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "hardhat test",
-    "lint": "echo 'no linter configured'",
-    "deploy": "hardhat run scripts/deploy.js --network localhost",
-    "interact": "node scripts/interact.js",
-    "serve:frontend": "npx serve frontend"
+    "start": "npx serve .",
+    "serve": "npx serve ."
   },
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "@openzeppelin/contracts": "^4.9.0",
-    "hardhat": "^2.12.7",
-    "dotenv": "^16.0.0"
+  "dependencies": {
+    "@stellar/freighter-api": "^6.0.0",
+    "@stellar/stellar-sdk": "^13.3.0"
   }
 }
