@@ -2,12 +2,15 @@
   "name": "rec-marketplace",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "npx serve .",
-    "serve": "npx serve ."
+    "serve": "npx serve .",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.0",
     "@stellar/stellar-sdk": "^13.3.0"
   }
 }
+
