@@ -4,7 +4,7 @@ use super::*;
 use soroban_sdk::{symbol_short, Env};
 
 #[test]
-fn test_create_and_buy_rec() {
+fn test_create_buy_and_retire_rec() {
     let env = Env::default();
     env.mock_all_auths();
 
@@ -24,6 +24,7 @@ fn test_create_and_buy_rec() {
     let item = client.get_rec(&101).unwrap();
     assert_eq!(item.id, 101);
     assert_eq!(item.is_sold, false);
+    assert_eq!(item.is_retired, false);
 
     let bought = client.buy_rec(&buyer, &101);
     assert!(bought);
@@ -31,4 +32,12 @@ fn test_create_and_buy_rec() {
     let updated_item = client.get_rec(&101).unwrap();
     assert_eq!(updated_item.is_sold, true);
     assert_eq!(updated_item.owner, buyer);
+
+    let retired = client.retire_rec(&buyer, &101);
+    assert!(retired);
+    assert_eq!(client.get_retirement_count(), 1);
+
+    let final_item = client.get_rec(&101).unwrap();
+    assert_eq!(final_item.is_retired, true);
 }
+
