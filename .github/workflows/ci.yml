@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,15 +7,46 @@ on:
     branches: [ main, master ]
 
 jobs:
-  tests:
+  contract-validation:
+    name: Smart Contract Validation & Syntax Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Contract Check
+        run: |
+          cd contracts/soroban_rec
+          cargo check --target wasm32-unknown-unknown
+
+  unit-and-integration-tests:
+    name: Frontend & Integration Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install
-        run: npm ci
-      - name: Run tests
-        run: npm test
+      - name: Run Integration Tests
+        run: node --test test/*.test.js
+
+  build-verification:
+    name: Production Build Verification
+    needs: [contract-validation, unit-and-integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Verify Index Files
+        run: |
+          test -f index.html
+          test -f frontend/index.html
+          test -f main.js
+          echo "All production static files verified successfully."
+
