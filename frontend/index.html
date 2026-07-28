@@ -3,187 +3,438 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>REC Marketplace | Stellar Testnet</title>
-    <link rel="preconnect" href="https://esm.sh" />
+    <title>Renewable Energy Credit Marketplace | Stellar Testnet & Soroban</title>
+    <meta name="description" content="Decentralized Renewable Energy Credit Marketplace powered by Stellar Testnet and Soroban Smart Contracts." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <!-- Top Bar Navigation -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand">
+          <div class="brand-logo">⚡</div>
+          <div class="brand-text">
+            <span class="brand-title">Stellar REC Exchange</span>
+            <span class="brand-subtitle">Soroban Smart Contracts v2.0</span>
+          </div>
+        </div>
+
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav id="headerNav" class="header-nav">
+          <a href="#marketplace" class="nav-link active">Marketplace</a>
+          <a href="#telemetry" class="nav-link">Live Telemetry</a>
+          <a href="#create" class="nav-link" id="openCreateModalLink">+ Issue REC</a>
+          <div class="network-indicator">
+            <span class="network-dot"></span> Stellar Testnet
+          </div>
+        </nav>
+      </div>
+    </header>
+
     <main class="app-shell">
-      <!-- content copied from original index.html -->
+      <!-- Hero Section -->
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Stellar Testnet</p>
+          <p class="eyebrow">Production-Ready Soroban DApp</p>
           <h1>Renewable Energy Credit Marketplace</h1>
           <p>
-            Connect Freighter, inspect your XLM balance, and send a testnet
-            payment that simulates purchasing renewable energy credits.
+            Trade, audit, and retire verifiable Renewable Energy Credits on-chain with instant settlement on Stellar Testnet and inter-contract registry verification.
           </p>
         </div>
         <div class="market-stats" aria-label="Marketplace summary">
-          <div>
-            <span class="stat-value">4</span>
-            <span class="stat-label">REC lots</span>
+          <div class="stat-card">
+            <span class="stat-value" id="onchainRecCount">4</span>
+            <span class="stat-label">Listed RECs</span>
           </div>
-          <div>
-            <span class="stat-value">Testnet</span>
-            <span class="stat-label">Network</span>
+          <div class="stat-card">
+            <span class="stat-value" id="onchainRetireCount">0</span>
+            <span class="stat-label">Retired Credits</span>
           </div>
-          <div>
-            <span class="stat-value">XLM</span>
-            <span class="stat-label">Settlement</span>
+          <div class="stat-card">
+            <span class="stat-value">Stellar</span>
+            <span class="stat-label">Soroban Engine</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="networkLatency">12 ms</span>
+            <span class="stat-label">RPC Latency</span>
           </div>
         </div>
       </section>
 
       <section class="dashboard">
+        <!-- Wallet Selection & Control Panel -->
         <aside class="wallet-panel" aria-label="Wallet controls">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Wallet</p>
-              <h2>Freighter connection</h2>
+              <p class="eyebrow">Multi-Wallet Support</p>
+              <h2>Wallet Connection</h2>
             </div>
             <span id="connectionBadge" class="badge muted">Disconnected</span>
+          </div>
+
+          <!-- Wallet Provider Selector -->
+          <div class="wallet-type-selector">
+            <label for="walletTypeSelect">Wallet Provider:</label>
+            <select id="walletTypeSelect">
+              <option value="freighter">Freighter Extension (Browser)</option>
+              <option value="web">Stellar Web Wallet (Secret Key / Keypair)</option>
+            </select>
+          </div>
+
+          <!-- Secret Key Input for Web Wallet fallback -->
+          <div id="secretKeyGroup" class="secret-key-group hidden">
+            <label for="secretKeyInput">Testnet Secret Key (S...):</label>
+            <input id="secretKeyInput" type="password" placeholder="S... (Leave blank to auto-generate)" />
+            <button id="generateKeyBtn" type="button" class="ghost">Generate New Keypair</button>
           </div>
 
           <div id="walletAddress" class="address-box">No wallet connected</div>
 
           <div class="wallet-actions">
-            <button id="connectBtn" type="button">Connect Freighter</button>
-            <button id="disconnectBtn" class="secondary" type="button" disabled>
-              Disconnect
-            </button>
+            <button id="connectBtn" type="button" class="primary-btn">Connect Wallet</button>
+            <button id="disconnectBtn" class="secondary" type="button" disabled>Disconnect</button>
           </div>
 
           <div class="balance-box">
-            <span>XLM balance</span>
+            <span>XLM Balance</span>
             <strong id="balanceValue">--</strong>
           </div>
 
-          <button id="refreshBalanceBtn" class="ghost" type="button" disabled>
-            Refresh balance
-          </button>
+          <div class="wallet-actions">
+            <button id="refreshBalanceBtn" class="ghost" type="button" disabled>Refresh</button>
+            <button id="fundAccountBtn" class="ghost" type="button">Fund via Friendbot</button>
+          </div>
 
           <div class="testnet-key-card">
-            <p class="eyebrow">Testnet demo address</p>
+            <p class="eyebrow">Demo Testnet Keypair</p>
             <div id="testnetKeyValue" class="address-box">GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P</div>
             <div class="wallet-actions testnet-actions">
-              <button id="copyKeyBtn" type="button">Copy address</button>
-              <button id="fillDestinationBtn" class="secondary" type="button">Fill destination</button>
+              <button id="copyKeyBtn" type="button" class="ghost">Copy Public Key</button>
+              <button id="fillDestinationBtn" class="ghost" type="button">Use Address</button>
             </div>
-            <a id="fundFriendbot" class="ghost" target="_blank" rel="noreferrer" href="https://friendbot.stellar.org/?addr=GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P">
-              Fund via Friendbot
-            </a>
+          </div>
+
+          <!-- Categorized Error Handling System Card -->
+          <div id="errorCategoryCard" class="error-card hidden">
+            <div class="error-header">
+              <span class="error-icon">⚠️</span>
+              <h4 id="errorCategoryTitle">Error Detected</h4>
+            </div>
+            <p id="errorCategoryMessage"></p>
           </div>
 
           <p id="walletMessage" class="message" role="status"></p>
         </aside>
 
-        <section class="transaction-panel" aria-label="REC purchase transaction">
+        <!-- Contract Interaction Panel -->
+        <section class="transaction-panel" aria-label="REC purchase & Soroban contract">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Transaction flow</p>
-              <h2>Send testnet XLM</h2>
+              <p class="eyebrow">Soroban Contract Engine</p>
+              <h2>On-Chain Execution</h2>
+            </div>
+            <span id="contractBadge" class="badge success">Soroban Active</span>
+          </div>
+
+          <!-- Deployed Contract Metadata -->
+          <div class="contract-metadata-card">
+            <div class="meta-item">
+              <span class="meta-label">Contract ID:</span>
+              <span id="contractIdDisplay" class="meta-value">CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Inter-contract Registry:</span>
+              <span class="meta-value accent">ENABLED (External Registry Interface)</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Soroban RPC URL:</span>
+              <span class="meta-value">https://soroban-testnet.stellar.org</span>
             </div>
           </div>
 
-          <form id="paymentForm">
+          <!-- Action Tabs -->
+          <div class="action-mode-selector">
+            <button id="modeContractBtn" class="tab-btn active" type="button">Invoke Soroban Contract</button>
+            <button id="modePaymentBtn" class="tab-btn" type="button">Send XLM Direct Payment</button>
+          </div>
+
+          <!-- Soroban Smart Contract Form -->
+          <form id="contractForm">
             <label>
-              Destination address
-              <input
-                id="destinationInput"
-                name="destination"
-                autocomplete="off"
-                placeholder="G..."
-                required
-              />
+              Select Contract Method:
+              <select id="contractMethodSelect">
+                <option value="buy_rec">buy_rec(buyer, rec_id)</option>
+                <option value="create_rec">create_rec(creator, id, mwh, price, source)</option>
+                <option value="retire_rec">retire_rec(owner, rec_id)</option>
+                <option value="get_rec">get_rec(rec_id)</option>
+              </select>
+            </label>
+
+            <label>
+              REC Lot ID
+              <input id="recIdInput" type="number" min="1" value="101" required />
+            </label>
+
+            <div id="createFieldsGroup" class="hidden">
+              <label>
+                Capacity (MWh)
+                <input id="recMwhInput" type="number" min="1" value="50" />
+              </label>
+
+              <label>
+                Price (Stroops / XLM)
+                <input id="recPriceInput" type="number" min="1000000" value="10000000" />
+              </label>
+
+              <label>
+                Energy Source
+                <select id="recSourceSelect">
+                  <option value="solar">Solar</option>
+                  <option value="wind">Wind</option>
+                  <option value="hydro">Hydro</option>
+                  <option value="biomass">Biomass</option>
+                </select>
+              </label>
+            </div>
+
+            <button id="invokeContractBtn" type="submit" disabled class="primary-btn">
+              <span class="btn-text">Call Soroban Smart Contract</span>
+              <span class="btn-spinner hidden"></span>
+            </button>
+          </form>
+
+          <!-- Native XLM Payment Form -->
+          <form id="paymentForm" class="hidden">
+            <label>
+              Destination Address
+              <input id="destinationInput" name="destination" autocomplete="off" placeholder="G..." required />
             </label>
 
             <label>
               Amount in XLM
-              <input
-                id="amountInput"
-                name="amount"
-                inputmode="decimal"
-                min="0.0000001"
-                step="0.0000001"
-                value="1"
-                required
-              />
+              <input id="amountInput" name="amount" inputmode="decimal" min="0.0000001" step="0.0000001" value="1" required />
             </label>
 
             <label>
               Memo
-              <input
-                id="memoInput"
-                name="memo"
-                maxlength="28"
-                value="REC marketplace purchase"
-              />
+              <input id="memoInput" name="memo" maxlength="28" value="REC settlement payment" />
             </label>
 
-            <button id="sendBtn" type="submit" disabled>Send XLM on Testnet</button>
+            <button id="sendBtn" type="submit" disabled class="primary-btn">
+              <span class="btn-text">Send XLM Payment</span>
+              <span class="btn-spinner hidden"></span>
+            </button>
           </form>
 
+          <!-- Status / Transaction Feedback -->
           <div id="txFeedback" class="tx-feedback idle">
-            Connect Freighter to begin a testnet transaction.
+            Connect wallet to begin transaction or invoke Soroban smart contract.
           </div>
         </section>
       </section>
 
-      <section class="credit-grid" aria-label="Renewable energy credit listings">
-        <article class="credit-card">
-          <span class="source solar">Solar</span>
-          <h3>Rajasthan Solar REC</h3>
-          <p>1 MWh generated from a utility solar facility.</p>
-          <div><strong>1.0 XLM</strong><span>Available now</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source wind">Wind</span>
-          <h3>Gujarat Wind REC</h3>
-          <p>Verified wind production from coastal turbines.</p>
-          <div><strong>1.4 XLM</strong><span>Limited lot</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source hydro">Hydro</span>
-          <h3>Himalayan Micro Hydro</h3>
-          <p>Community-scale hydroelectric energy credit.</p>
-          <div><strong>0.8 XLM</strong><span>Best value</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source biomass">Bio</span>
-          <h3>Punjab Biomass REC</h3>
-          <p>Agricultural residue converted into renewable power.</p>
-          <div><strong>1.2 XLM</strong><span>New listing</span></div>
-        </article>
+      <!-- Real-Time Event Telemetry Stream -->
+      <section id="telemetry" class="events-section">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Real-Time On-Chain Stream</p>
+            <h2>Soroban RPC & Horizon Telemetry</h2>
+          </div>
+          <div class="telemetry-controls">
+            <select id="eventFilterSelect" class="filter-select">
+              <option value="ALL">All Events</option>
+              <option value="rec:created">rec:created</option>
+              <option value="rec:purchased">rec:purchased</option>
+              <option value="rec:retired">rec:retired</option>
+            </select>
+            <span class="live-pulse">🔴 LIVE</span>
+          </div>
+        </div>
+        <div id="eventLogContainer" class="event-log-container">
+          <div class="event-row system">
+            <span class="event-time">[System]</span>
+            <span class="event-text">Real-time Soroban event stream listener connected to RPC (https://soroban-testnet.stellar.org).</span>
+          </div>
+        </div>
       </section>
 
-      <section class="info-section" aria-label="Project information">
-        <article class="info-card">
-          <p class="eyebrow">About this demo</p>
-          <h2>Built to showcase a testnet renewable energy credit marketplace</h2>
-          <p>
-            This prototype demonstrates how a sustainability marketplace could feel
-            on Stellar: users connect a wallet, inspect balances, and simulate REC
-            purchases through simple testnet transactions.
-          </p>
-        </article>
-        <article class="info-card">
-          <p class="eyebrow">What you can explore</p>
-          <ul>
-            <li>How Freighter wallet authentication works in a web app</li>
-            <li>How a balance check and payment flow look on Stellar Testnet</li>
-            <li>How a marketplace experience can be framed around real-world clean energy assets</li>
-          </ul>
-        </article>
-        <article class="info-card">
-          <p class="eyebrow">Testnet setup</p>
-          <p>
-            Make sure Freighter is set to <strong>Stellar Testnet</strong>, not Public.
-            Open the extension, switch the network, then reload this page before connecting.
-          </p>
-        </article>
+      <!-- Marketplace Listings -->
+      <section id="marketplace" class="marketplace-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Verifiable Assets</p>
+            <h2>Renewable Energy Credit Listings</h2>
+          </div>
+          <button id="createRecModalBtn" class="primary-btn small">+ Create New REC</button>
+        </div>
+
+        <div id="creditGrid" class="credit-grid" aria-label="Renewable energy credit listings">
+          <article class="credit-card" data-id="101">
+            <div class="card-header">
+              <span class="source solar">Solar</span>
+              <span class="status-badge active">Listed</span>
+            </div>
+            <h3>Rajasthan Solar Park (REC #101)</h3>
+            <p>50 MWh clean solar power generated in Thar Desert facility.</p>
+            <div class="card-meta">
+              <div>
+                <span class="meta-title">Capacity</span>
+                <span class="meta-val">50 MWh</span>
+              </div>
+              <div>
+                <span class="meta-title">Price</span>
+                <span class="meta-val">1.0 XLM</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="buy-rec-btn primary-btn full-width" data-id="101">Buy REC #101</button>
+            </div>
+          </article>
+
+          <article class="credit-card" data-id="102">
+            <div class="card-header">
+              <span class="source wind">Wind</span>
+              <span class="status-badge active">Listed</span>
+            </div>
+            <h3>Gujarat Offshore Wind (REC #102)</h3>
+            <p>120 MWh offshore wind generation verified by Soroban contract.</p>
+            <div class="card-meta">
+              <div>
+                <span class="meta-title">Capacity</span>
+                <span class="meta-val">120 MWh</span>
+              </div>
+              <div>
+                <span class="meta-title">Price</span>
+                <span class="meta-val">2.5 XLM</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="buy-rec-btn primary-btn full-width" data-id="102">Buy REC #102</button>
+            </div>
+          </article>
+
+          <article class="credit-card" data-id="103">
+            <div class="card-header">
+              <span class="source hydro">Hydro</span>
+              <span class="status-badge active">Listed</span>
+            </div>
+            <h3>Himalayan Hydroelectric (REC #103)</h3>
+            <p>80 MWh run-of-river hydro power generated in Himachal sector.</p>
+            <div class="card-meta">
+              <div>
+                <span class="meta-title">Capacity</span>
+                <span class="meta-val">80 MWh</span>
+              </div>
+              <div>
+                <span class="meta-title">Price</span>
+                <span class="meta-val">1.6 XLM</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="buy-rec-btn primary-btn full-width" data-id="103">Buy REC #103</button>
+            </div>
+          </article>
+
+          <article class="credit-card" data-id="104">
+            <div class="card-header">
+              <span class="source biomass">Bio</span>
+              <span class="status-badge active">Listed</span>
+            </div>
+            <h3>Punjab Bio-Energy Plant (REC #104)</h3>
+            <p>40 MWh agricultural biomass clean energy generation.</p>
+            <div class="card-meta">
+              <div>
+                <span class="meta-title">Capacity</span>
+                <span class="meta-val">40 MWh</span>
+              </div>
+              <div>
+                <span class="meta-title">Price</span>
+                <span class="meta-val">0.9 XLM</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="buy-rec-btn primary-btn full-width" data-id="104">Buy REC #104</button>
+            </div>
+          </article>
+        </div>
       </section>
     </main>
+
+    <!-- Create REC Modal -->
+    <div id="createModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Mint & Issue New REC</h3>
+          <button id="closeCreateModalBtn" class="close-btn">&times;</button>
+        </div>
+        <form id="modalCreateForm">
+          <label>
+            REC Lot ID
+            <input id="modalRecId" type="number" min="1" placeholder="e.g. 105" required />
+          </label>
+          <label>
+            Energy Capacity (MWh)
+            <input id="modalRecMwh" type="number" min="1" placeholder="e.g. 60" required />
+          </label>
+          <label>
+            Price in XLM
+            <input id="modalRecPrice" type="number" min="0.1" step="0.1" value="1.5" required />
+          </label>
+          <label>
+            Energy Source
+            <select id="modalRecSource">
+              <option value="solar">Solar</option>
+              <option value="wind">Wind</option>
+              <option value="hydro">Hydro</option>
+              <option value="biomass">Biomass</option>
+            </select>
+          </label>
+          <button type="submit" class="primary-btn full-width">Mint & Publish REC on Soroban</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Retirement Certificate Modal -->
+    <div id="certModal" class="modal-overlay hidden">
+      <div class="modal-card certificate-card">
+        <div class="modal-header">
+          <h3>🌱 Green Retirement Certificate</h3>
+          <button id="closeCertModalBtn" class="close-btn">&times;</button>
+        </div>
+        <div class="cert-body">
+          <div class="cert-seal">VERIFIED ON-CHAIN</div>
+          <p class="cert-subtitle">Official Soroban Carbon Offset Certificate</p>
+          <div class="cert-detail">
+            <span>Certificate ID:</span>
+            <strong id="certIdVal">CERT-REC-101-99A8</strong>
+          </div>
+          <div class="cert-detail">
+            <span>REC Lot ID:</span>
+            <strong id="certRecIdVal">101</strong>
+          </div>
+          <div class="cert-detail">
+            <span>Beneficiary:</span>
+            <strong id="certOwnerVal" class="truncate">G...</strong>
+          </div>
+          <div class="cert-detail">
+            <span>Offset Capacity:</span>
+            <strong id="certMwhVal">50 MWh Clean Energy</strong>
+          </div>
+          <div class="cert-detail">
+            <span>Verification Hash:</span>
+            <code id="certHashVal">0x0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81</code>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="./main.js"></script>
   </body>
