@@ -1,21 +1,37 @@
 #![no_std]
-use soroban_sdk::{contract, contractclient, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
 
-// Inter-contract Interface definition for external REC Verifier / Registry Contract
-#[contractclient(name = "ExternalRegistryClient")]
-pub trait ExternalRegistryInterface {
-    fn verify_certificate(env: Env, rec_id: u64, amount_mwh: u32) -> bool;
-    fn record_retirement(env: Env, rec_id: u64, owner: Address) -> bool;
-}
-
+// --- Contract 1: Reward Token Contract ---
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
-pub enum RecStatus {
-    Active,
-    Sold,
-    Retired,
+pub struct RewardBalance {
+    pub owner: Address,
+    pub amount: i128,
 }
 
+#[contract]
+pub struct RewardTokenContract;
+
+#[contractimpl]
+impl RewardTokenContract {
+    pub fn mint(env: Env, to: Address, amount: i128) -> i128 {
+        let mut current_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&to)
+            .unwrap_or(0);
+        current_balance += amount;
+        env.storage().persistent().set(&to, &current_balance);
+        env.events().publish((symbol_short!("token"), symbol_short!("minted")), (to, amount));
+        current_balance
+    }
+
+    pub fn balance_of(env: Env, owner: Address) -> i128 {
+        env.storage().persistent().get(&owner).unwrap_or(0)
+    }
+}
+
+// --- Contract 2: REC Marketplace Contract (Inter-Contract Communication) ---
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecItem {
@@ -25,16 +41,14 @@ pub struct RecItem {
     pub source: Symbol,
     pub owner: Address,
     pub is_sold: bool,
-    pub is_retired: bool,
 }
 
 #[contracttype]
 pub enum DataKey {
     Admin,
+    RewardTokenContract,
     RecCount,
     Rec(u64),
-    RegistryContract,
-    RetirementCount,
 }
 
 #[contract]
@@ -42,19 +56,13 @@ pub struct RecMarketplaceContract;
 
 #[contractimpl]
 impl RecMarketplaceContract {
-    pub fn initialize(env: Env, admin: Address) {
+    pub fn initialize(env: Env, admin: Address, reward_token_contract: Address) {
         if env.storage().instance().has(&DataKey::Admin) {
             panic!("Already initialized");
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::RewardTokenContract, &reward_token_contract);
         env.storage().instance().set(&DataKey::RecCount, &0u64);
-        env.storage().instance().set(&DataKey::RetirementCount, &0u64);
-    }
-
-    pub fn set_registry_contract(env: Env, registry: Address) {
-        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
-        admin.require_auth();
-        env.storage().instance().set(&DataKey::RegistryContract, &registry);
     }
 
     pub fn create_rec(
@@ -78,7 +86,6 @@ impl RecMarketplaceContract {
             source,
             owner: creator.clone(),
             is_sold: false,
-            is_retired: false,
         };
 
         env.storage().persistent().set(&DataKey::Rec(id), &item);
@@ -90,6 +97,7 @@ impl RecMarketplaceContract {
         true
     }
 
+    // Inter-contract call: Calls RewardTokenContract::mint upon purchasing REC
     pub fn buy_rec(env: Env, buyer: Address, id: u64) -> bool {
         buyer.require_auth();
 
@@ -102,47 +110,18 @@ impl RecMarketplaceContract {
         if item.is_sold {
             panic!("REC is already sold");
         }
-        if item.is_retired {
-            panic!("REC is retired");
-        }
 
         item.is_sold = true;
         item.owner = buyer.clone();
         env.storage().persistent().set(&DataKey::Rec(id), &item);
 
+        // Perform Inter-Contract Invocation to RewardTokenContract
+        if let Some(reward_contract_id) = env.storage().instance().get::<_, Address>(&DataKey::RewardTokenContract) {
+            let client = RewardTokenContractClient::new(&env, &reward_contract_id);
+            client.mint(&buyer, &10_000_000); // Mint 10 RECT Reward tokens to buyer
+        }
+
         env.events().publish((symbol_short!("rec"), symbol_short!("purchased")), (id, buyer));
-        true
-    }
-
-    pub fn retire_rec(env: Env, owner: Address, id: u64) -> bool {
-        owner.require_auth();
-
-        let mut item: RecItem = env
-            .storage()
-            .persistent()
-            .get(&DataKey::Rec(id))
-            .unwrap_or_else(|| panic!("REC not found"));
-
-        if item.owner != owner {
-            panic!("Not REC owner");
-        }
-        if item.is_retired {
-            panic!("REC is already retired");
-        }
-
-        item.is_retired = true;
-        env.storage().persistent().set(&DataKey::Rec(id), &item);
-
-        // Perform Inter-contract invocation if Registry Contract address is configured
-        if let Some(registry_addr) = env.storage().instance().get::<DataKey, Address>(&DataKey::RegistryContract) {
-            let client = ExternalRegistryClient::new(&env, &registry_addr);
-            client.record_retirement(&id, &owner);
-        }
-
-        let ret_count: u64 = env.storage().instance().get(&DataKey::RetirementCount).unwrap_or(0);
-        env.storage().instance().set(&DataKey::RetirementCount, &(ret_count + 1));
-
-        env.events().publish((symbol_short!("rec"), symbol_short!("retired")), (id, owner));
         true
     }
 
@@ -153,12 +132,7 @@ impl RecMarketplaceContract {
     pub fn get_rec_count(env: Env) -> u64 {
         env.storage().instance().get(&DataKey::RecCount).unwrap_or(0)
     }
-
-    pub fn get_retirement_count(env: Env) -> u64 {
-        env.storage().instance().get(&DataKey::RetirementCount).unwrap_or(0)
-    }
 }
 
 #[cfg(test)]
 mod test;
-

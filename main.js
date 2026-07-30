@@ -1,5 +1,19 @@
 import * as StellarSdk from "https://esm.sh/@stellar/stellar-sdk@13.3.0";
 import * as FreighterApiModule from "https://esm.sh/@stellar/freighter-api";
+import {
+  categorizeError,
+  defaultPriceStroops,
+  formatContractEvent,
+  recSourceForId,
+} from "./lib/soroban-helpers.js";
+import {
+  addressToScVal,
+  createSorobanClient,
+  fetchContractEvents,
+  invokeContractCall,
+  simulateContractCall,
+  symbolToScVal,
+} from "./lib/soroban-client.js";
 
 const SDK = StellarSdk.default || StellarSdk;
 const FreighterApi = FreighterApiModule.default || FreighterApiModule;
@@ -8,23 +22,21 @@ const HorizonServer = SDK.Horizon?.Server || SDK.Server;
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const SOROBAN_RPC_URL = "https://soroban-testnet.stellar.org";
 const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
+const EXPLORER_TX = "https://stellar.expert/explorer/testnet/tx/";
 
 const DEFAULT_CONTRACT_ID = "CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ";
 let activeContractId = DEFAULT_CONTRACT_ID;
+let rewardContractId = null;
+let eventPollStartLedger = null;
+let seenEventIds = new Set();
+let eventPollTimer = null;
 
 const state = {
-  walletType: "freighter", // "freighter" | "web"
+  walletType: "freighter",
   publicKey: "",
   secretKey: "",
   balance: null,
   keypair: null,
-  recs: [
-    { id: 101, title: "Rajasthan Solar Park", amount_mwh: 50, price_xlm: 1.0, source: "solar", owner: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", status: "Active" },
-    { id: 102, title: "Gujarat Offshore Wind", amount_mwh: 120, price_xlm: 2.5, source: "wind", owner: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", status: "Active" },
-    { id: 103, title: "Himalayan Hydroelectric", amount_mwh: 80, price_xlm: 1.6, source: "hydro", owner: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", status: "Active" },
-    { id: 104, title: "Punjab Bio-Energy Plant", amount_mwh: 40, price_xlm: 0.9, source: "biomass", owner: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", status: "Active" },
-  ],
-  retiredCount: 0,
 };
 
 const els = {
@@ -43,13 +55,8 @@ const els = {
   errorCategoryCard: document.querySelector("#errorCategoryCard"),
   errorCategoryTitle: document.querySelector("#errorCategoryTitle"),
   errorCategoryMessage: document.querySelector("#errorCategoryMessage"),
-
-  // Mobile Navigation
-  mobileMenuBtn: document.querySelector("#mobileMenuBtn"),
-  headerNav: document.querySelector("#headerNav"),
-
-  // Contract & Mode UI
   contractIdDisplay: document.querySelector("#contractIdDisplay"),
+  rewardContractDisplay: document.querySelector("#rewardContractDisplay"),
   modePaymentBtn: document.querySelector("#modePaymentBtn"),
   modeContractBtn: document.querySelector("#modeContractBtn"),
   paymentForm: document.querySelector("#paymentForm"),
@@ -58,100 +65,47 @@ const els = {
   amountInput: document.querySelector("#amountInput"),
   memoInput: document.querySelector("#memoInput"),
   sendBtn: document.querySelector("#sendBtn"),
-
   contractMethodSelect: document.querySelector("#contractMethodSelect"),
   recIdInput: document.querySelector("#recIdInput"),
   recMwhInput: document.querySelector("#recMwhInput"),
-  createFieldsGroup: document.querySelector("#createFieldsGroup"),
+  mwhLabel: document.querySelector("#mwhLabel"),
   invokeContractBtn: document.querySelector("#invokeContractBtn"),
   txFeedback: document.querySelector("#txFeedback"),
-
-  // Telemetry & Grid
   eventLogContainer: document.querySelector("#eventLogContainer"),
-  eventFilterSelect: document.querySelector("#eventFilterSelect"),
   onchainRecCount: document.querySelector("#onchainRecCount"),
-  onchainRetireCount: document.querySelector("#onchainRetireCount"),
-  creditGrid: document.querySelector("#creditGrid"),
-
-  // Modals
-  createModal: document.querySelector("#createModal"),
-  createRecModalBtn: document.querySelector("#createRecModalBtn"),
-  openCreateModalLink: document.querySelector("#openCreateModalLink"),
-  closeCreateModalBtn: document.querySelector("#closeCreateModalBtn"),
-  modalCreateForm: document.querySelector("#modalCreateForm"),
-
-  certModal: document.querySelector("#certModal"),
-  closeCertModalBtn: document.querySelector("#closeCertModalBtn"),
-  certIdVal: document.querySelector("#certIdVal"),
-  certRecIdVal: document.querySelector("#certRecIdVal"),
-  certOwnerVal: document.querySelector("#certOwnerVal"),
-  certMwhVal: document.querySelector("#certMwhVal"),
-  certHashVal: document.querySelector("#certHashVal"),
+  copyKeyBtn: document.querySelector("#copyKeyBtn"),
+  fillDestinationBtn: document.querySelector("#fillDestinationBtn"),
 };
 
 const horizonServer = new HorizonServer(HORIZON_URL);
+const sorobanRpc = createSorobanClient(SDK, SOROBAN_RPC_URL);
 
-// Helper for Event Telemetry Logging
-function logEvent(type, message, topicTag = "ALL") {
+function logEvent(type, message) {
   const row = document.createElement("div");
   row.className = `event-row ${type}`;
-  row.dataset.topic = topicTag;
   const timeStr = new Date().toLocaleTimeString();
   row.innerHTML = `<span class="event-time">[${timeStr}]</span> <span class="event-text">${message}</span>`;
-
   els.eventLogContainer.prepend(row);
-  applyEventFilter();
 }
 
-function applyEventFilter() {
-  const selectedFilter = els.eventFilterSelect?.value || "ALL";
-  const rows = els.eventLogContainer.querySelectorAll(".event-row");
-  rows.forEach((row) => {
-    if (selectedFilter === "ALL" || row.dataset.topic === selectedFilter || row.classList.contains("system")) {
-      row.style.display = "flex";
-    } else {
-      row.style.display = "none";
-    }
-  });
-}
-
-// Category Error Handling System
 function handleCategorizedError(error, context = "") {
   els.errorCategoryCard.classList.remove("hidden");
-  let category = "Contract Execution Error";
-  let detail = error?.message || String(error);
+  const detail = error?.message || String(error);
+  const category = categorizeError(detail);
+  let message = detail;
 
-  // 1. Wallet Provider Error
-  if (
-    detail.includes("Freighter") ||
-    detail.includes("extension") ||
-    detail.includes("User rejected") ||
-    detail.includes("rejected")
-  ) {
-    category = "Wallet Provider Error";
-    detail = `${detail} (Resolution: Ensure wallet extension is unlocked and request permission).`;
-  }
-  // 2. Network / RPC Error
-  else if (
-    detail.includes("network") ||
-    detail.includes("Testnet") ||
-    detail.includes("Horizon") ||
-    detail.includes("RPC") ||
-    detail.includes("fetch")
-  ) {
-    category = "Network & Environment Error";
-    detail = `${detail} (Resolution: Check connection to https://soroban-testnet.stellar.org).`;
-  }
-  // 3. Account / Contract Execution Error
-  else {
-    category = "Contract & Execution Error";
-    detail = `${detail} (Resolution: Check parameters, account balance, and contract ownership).`;
+  if (category === "Wallet Provider Error") {
+    message = `${detail} (Resolution: Ensure wallet is unlocked and permission is granted).`;
+  } else if (category === "Network / Environment Error") {
+    message = `${detail} (Resolution: Ensure Freighter is set to Stellar Testnet and internet connection is active).`;
+  } else {
+    message = `${detail} (Resolution: Verify inputs, fund account via Friendbot, and confirm contract is initialized).`;
   }
 
-  els.errorCategoryTitle.textContent = category;
-  els.errorCategoryMessage.textContent = detail;
-  setWalletMessage(detail, "error");
-  logEvent("system", `[ERROR] ${category}: ${detail}`);
+  els.errorCategoryTitle.textContent = `⚠️ ${category}`;
+  els.errorCategoryMessage.textContent = message;
+  setWalletMessage(context ? `${context}: ${message}` : message, "error");
+  logEvent("system", `[ERROR] ${category}: ${message}`);
 }
 
 function clearCategorizedError() {
@@ -192,6 +146,21 @@ function unwrapFreighterValue(result, keys) {
   return result;
 }
 
+async function signPreparedTransaction(tx) {
+  if (state.walletType === "freighter") {
+    const wallet = await getFreighterApi();
+    if (!wallet) throw new Error("Freighter wallet extension was not detected.");
+    const signedResponse = await wallet.signTransaction(tx.toXDR(), {
+      address: state.publicKey,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    });
+    const signedXdr = unwrapFreighterValue(signedResponse, ["signedTxXdr", "signedXDR", "xdr"]);
+    return SDK.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
+  }
+  tx.sign(state.keypair);
+  return tx;
+}
+
 function setConnected(publicKey) {
   state.publicKey = publicKey;
   els.connectionBadge.textContent = `Connected (${state.walletType.toUpperCase()})`;
@@ -205,7 +174,8 @@ function setConnected(publicKey) {
   clearCategorizedError();
   setWalletMessage(`Connected as ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}.`, "success");
   logEvent("system", `Wallet connected (${state.walletType}): ${publicKey}`);
-  renderGrid();
+  refreshOnChainRecCount();
+  startEventStream();
 }
 
 function setDisconnected(message = "Wallet disconnected.") {
@@ -224,8 +194,8 @@ function setDisconnected(message = "Wallet disconnected.") {
   els.invokeContractBtn.disabled = true;
   clearCategorizedError();
   setWalletMessage(message, "info");
-  setTxFeedback("Connect wallet to begin transaction or invoke Soroban smart contract.", "idle");
-  renderGrid();
+  setTxFeedback("Connect wallet to begin a testnet transaction or contract call.", "idle");
+  stopEventStream();
 }
 
 async function connectWallet() {
@@ -240,7 +210,7 @@ async function connectWallet() {
       const networkInfo = await (wallet.getNetwork ? wallet.getNetwork() : wallet.getNetworkDetails());
       const passphrase = networkInfo?.networkPassphrase;
       if (passphrase && passphrase !== NETWORK_PASSPHRASE) {
-        throw new Error("Freighter is not set to Stellar Testnet. Switch Freighter to Stellar Testnet.");
+        throw new Error("Freighter is not set to Stellar Testnet. Please switch Freighter to Stellar Testnet in extension settings.");
       }
 
       let publicKey = "";
@@ -256,14 +226,13 @@ async function connectWallet() {
         throw new Error("Freighter did not return a valid public key.");
       }
       setConnected(publicKey);
-
-    } else { // "web"
+    } else {
       let sk = els.secretKeyInput.value.trim();
       if (!sk) {
         const kp = SDK.Keypair.random();
         sk = kp.secret();
         els.secretKeyInput.value = sk;
-        logEvent("system", `Generated new testnet keypair secret key.`);
+        logEvent("system", "Generated new testnet secret key.");
       }
       const kp = SDK.Keypair.fromSecret(sk);
       state.keypair = kp;
@@ -284,10 +253,10 @@ async function fetchBalance() {
     const account = await horizonServer.loadAccount(state.publicKey);
     const nativeBalance = account.balances.find((b) => b.asset_type === "native");
     state.balance = nativeBalance ? Number(nativeBalance.balance) : 0;
-    els.balanceValue.textContent = `${state.balance.toFixed(4)} XLM`;
+    els.balanceValue.textContent = `${state.balance.toFixed(7)} XLM`;
     setWalletMessage("Balance loaded from Stellar Testnet.", "success");
-    logEvent("system", `Balance loaded: ${state.balance.toFixed(4)} XLM`);
-  } catch (error) {
+    logEvent("system", `Balance updated: ${state.balance.toFixed(4)} XLM`);
+  } catch {
     els.balanceValue.textContent = "--";
     setWalletMessage("Account unfunded on Testnet. Click 'Fund via Friendbot' below.", "error");
   }
@@ -303,14 +272,13 @@ async function fundViaFriendbot() {
     const res = await fetch(`https://friendbot.stellar.org/?addr=${state.publicKey}`);
     if (!res.ok) throw new Error("Friendbot funding request failed.");
     setWalletMessage("Account funded successfully with testnet XLM!", "success");
-    logEvent("system", `Funded account ${state.publicKey} via Friendbot.`);
+    logEvent("tx", `Funded account ${state.publicKey} via Stellar Friendbot.`);
     await fetchBalance();
   } catch (error) {
     handleCategorizedError(error, "Friendbot Funding Failed");
   }
 }
 
-// Send XLM Payment
 async function sendPayment(event) {
   event.preventDefault();
   clearCategorizedError();
@@ -343,7 +311,7 @@ async function sendPayment(event) {
           destination,
           asset: SDK.Asset.native(),
           amount: amount.toFixed(7),
-        })
+        }),
       )
       .setTimeout(180);
 
@@ -352,32 +320,17 @@ async function sendPayment(event) {
     }
 
     const transaction = builder.build();
-    let signedTransaction;
-
-    if (state.walletType === "freighter") {
-      setTxFeedback("Awaiting Freighter wallet signature...", "pending");
-      const wallet = await getFreighterApi();
-      const signedResponse = await wallet.signTransaction(transaction.toXDR(), {
-        address: state.publicKey,
-        networkPassphrase: NETWORK_PASSPHRASE,
-      });
-      const signedXdr = unwrapFreighterValue(signedResponse, ["signedTxXdr", "signedXDR", "xdr"]);
-      signedTransaction = SDK.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
-    } else {
-      setTxFeedback("Signing transaction with Web Wallet keypair...", "pending");
-      transaction.sign(state.keypair);
-      signedTransaction = transaction;
-    }
+    const signedTransaction = await signPreparedTransaction(transaction);
 
     setTxFeedback("Submitting payment to Stellar Testnet...", "pending");
     const result = await horizonServer.submitTransaction(signedTransaction);
     const hash = result.hash;
 
     setTxFeedback(
-      `✅ Success! Payment confirmed on Stellar Testnet.<br /><a href="https://stellar.expert/explorer/testnet/tx/${hash}" target="_blank" rel="noreferrer">View Tx Hash: ${hash}</a>`,
-      "success"
+      `✅ Success. Transaction confirmed on Stellar Testnet.<br /><a href="${EXPLORER_TX}${hash}" target="_blank" rel="noreferrer">View Hash: ${hash}</a>`,
+      "success",
     );
-    logEvent("purchased", `Payment of ${amount} XLM to ${destination.slice(0, 8)}... confirmed. Tx Hash: ${hash}`);
+    logEvent("tx", `Payment of ${amount} XLM to ${destination.slice(0, 8)}... confirmed. Hash: ${hash}`);
     await fetchBalance();
   } catch (error) {
     handleCategorizedError(error, "Payment Failed");
@@ -387,7 +340,48 @@ async function sendPayment(event) {
   }
 }
 
-// Soroban Contract Invocation Engine
+async function refreshOnChainRecCount() {
+  if (!state.publicKey || !activeContractId) return;
+  try {
+    const count = await simulateContractCall({
+      SDK,
+      rpcServer: sorobanRpc,
+      contractId: activeContractId,
+      method: "get_rec_count",
+      scValArgs: [],
+      publicKey: state.publicKey,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    });
+    if (typeof count === "number" || typeof count === "bigint") {
+      els.onchainRecCount.textContent = String(count);
+    }
+  } catch {
+    // Account may be unfunded; keep default display.
+  }
+}
+
+function buildMethodArgs(method, recId, mwh) {
+  if (method === "get_rec") {
+    return [SDK.nativeToScVal(BigInt(recId), { type: "u64" })];
+  }
+  if (method === "create_rec") {
+    return [
+      addressToScVal(SDK, state.publicKey),
+      SDK.nativeToScVal(BigInt(recId), { type: "u64" }),
+      SDK.nativeToScVal(Number(mwh), { type: "u32" }),
+      SDK.nativeToScVal(defaultPriceStroops(recId), { type: "i64" }),
+      symbolToScVal(SDK, recSourceForId(recId)),
+    ];
+  }
+  if (method === "buy_rec") {
+    return [
+      addressToScVal(SDK, state.publicKey),
+      SDK.nativeToScVal(BigInt(recId), { type: "u64" }),
+    ];
+  }
+  throw new Error(`Unsupported contract method: ${method}`);
+}
+
 async function invokeSorobanContract(event) {
   if (event) event.preventDefault();
   clearCategorizedError();
@@ -399,63 +393,67 @@ async function invokeSorobanContract(event) {
 
   const method = els.contractMethodSelect.value;
   const recId = Number(els.recIdInput.value);
+  const mwh = Number(els.recMwhInput.value) || 50;
+
+  if (!Number.isFinite(recId) || recId <= 0) {
+    handleCategorizedError(new Error("REC Lot ID must be a positive number."), "Validation");
+    return;
+  }
 
   try {
     els.invokeContractBtn.disabled = true;
-    setTxFeedback(`Simulating & building Soroban invocation: '${method}(#${recId})'...`, "pending");
+    const scValArgs = buildMethodArgs(method, recId, mwh);
 
-    logEvent("created", `Invoking Soroban contract [${activeContractId.slice(0, 8)}...] method '${method}' for REC #${recId}`);
+    logEvent("contract", `Invoking ${method} on ${activeContractId.slice(0, 8)}… for REC #${recId}`);
 
-    await wait(1000);
-    setTxFeedback(`Signing Soroban transaction with ${state.walletType.toUpperCase()}...`, "pending");
-    await wait(900);
+    if (method === "get_rec") {
+      setTxFeedback(`Simulating read-only call get_rec(${recId}) via Soroban RPC…`, "pending");
+      const rec = await simulateContractCall({
+        SDK,
+        rpcServer: sorobanRpc,
+        contractId: activeContractId,
+        method,
+        scValArgs,
+        publicKey: state.publicKey,
+        networkPassphrase: NETWORK_PASSPHRASE,
+      });
 
-    const mockHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
-
-    // Execute state changes
-    const recItem = state.recs.find((r) => r.id === recId);
-
-    if (method === "buy_rec") {
-      if (recItem) {
-        recItem.status = "Sold";
-        recItem.owner = state.publicKey;
-      }
-      logEvent("purchased", `[EVENT EMITTED] rec:purchased -> ID #${recId} bought by ${state.publicKey.slice(0, 8)}...`, "rec:purchased");
-    } else if (method === "retire_rec") {
-      if (recItem) {
-        recItem.status = "Retired";
-        state.retiredCount += 1;
-        els.onchainRetireCount.textContent = state.retiredCount;
-      }
-      logEvent("retired", `[EVENT EMITTED] rec:retired -> ID #${recId} retired on-chain. Inter-contract registry verified!`, "rec:retired");
-      showRetirementCertificate(recId, state.publicKey, recItem?.amount_mwh || 50, mockHash);
-    } else if (method === "create_rec") {
-      const mwh = Number(els.recMwhInput.value) || 50;
-      const price = (Number(document.querySelector("#recPriceInput")?.value) || 10000000) / 10000000;
-      const source = document.querySelector("#recSourceSelect")?.value || "solar";
-      
-      if (!state.recs.some((r) => r.id === recId)) {
-        state.recs.push({
-          id: recId,
-          title: `Custom ${source.toUpperCase()} REC (Lot #${recId})`,
-          amount_mwh: mwh,
-          price_xlm: price,
-          source: source,
-          owner: state.publicKey,
-          status: "Active"
-        });
-      }
-      logEvent("created", `[EVENT EMITTED] rec:created -> ID #${recId} (${mwh} MWh) published on-chain.`, "rec:created");
+      setTxFeedback(
+        `✅ get_rec(${recId}) result:<br /><pre>${JSON.stringify(rec, null, 2)}</pre>`,
+        "success",
+      );
+      logEvent("contract", `get_rec #${recId}: ${rec ? JSON.stringify(rec) : "null"}`);
+      return;
     }
 
-    renderGrid();
-    els.onchainRecCount.textContent = state.recs.length;
+    setTxFeedback(`Simulating & preparing ${method} transaction…`, "pending");
+    const { hash } = await invokeContractCall({
+      SDK,
+      rpcServer: sorobanRpc,
+      contractId: activeContractId,
+      method,
+      scValArgs,
+      publicKey: state.publicKey,
+      networkPassphrase: NETWORK_PASSPHRASE,
+      signTransaction: signPreparedTransaction,
+    });
 
     setTxFeedback(
-      `✅ Soroban Smart Contract Execution Confirmed!<br />Method: <code>${method}(rec_id=${recId})</code><br />Contract ID: <code>${activeContractId}</code><br /><a href="https://stellar.expert/explorer/testnet/tx/${mockHash}" target="_blank" rel="noreferrer">Explorer Hash: ${mockHash}</a>`,
-      "success"
+      `✅ Soroban contract call confirmed!<br />Method: <code>${method}(rec_id=${recId})</code><br />Contract: <code>${activeContractId}</code><br /><a href="${EXPLORER_TX}${hash}" target="_blank" rel="noreferrer">Explorer Hash: ${hash}</a>`,
+      "success",
     );
+    logEvent("contract", `${method} confirmed for REC #${recId}. Hash: ${hash}`);
 
+    if (method === "buy_rec") {
+      const btn = document.querySelector(`.buy-rec-btn[data-id="${recId}"]`);
+      if (btn) {
+        btn.textContent = "Purchased (On-Chain)";
+        btn.disabled = true;
+      }
+    }
+
+    await refreshOnChainRecCount();
+    await pollContractEventsOnce();
     await fetchBalance();
   } catch (error) {
     handleCategorizedError(error, "Soroban Contract Call Failed");
@@ -465,97 +463,67 @@ async function invokeSorobanContract(event) {
   }
 }
 
-function showRetirementCertificate(recId, owner, mwh, hash) {
-  els.certIdVal.textContent = `CERT-REC-${recId}-${Math.floor(1000 + Math.random() * 9000)}`;
-  els.certRecIdVal.textContent = recId;
-  els.certOwnerVal.textContent = owner;
-  els.certMwhVal.textContent = `${mwh} MWh Clean Energy`;
-  els.certHashVal.textContent = `0x${hash}`;
-  els.certModal.classList.remove("hidden");
-}
+async function pollContractEventsOnce() {
+  if (!activeContractId) return;
+  try {
+    const { events, nextStartLedger } = await fetchContractEvents({
+      rpcServer: sorobanRpc,
+      contractId: activeContractId,
+      startLedger: eventPollStartLedger,
+      limit: 30,
+    });
 
-function renderGrid() {
-  els.creditGrid.innerHTML = "";
-  state.recs.forEach((rec) => {
-    const card = document.createElement("article");
-    card.className = "credit-card";
-    card.dataset.id = rec.id;
-
-    let buttonHtml = "";
-    if (rec.status === "Active") {
-      buttonHtml = `<button class="buy-rec-btn primary-btn full-width" data-id="${rec.id}">Buy REC #${rec.id}</button>`;
-    } else if (rec.status === "Sold") {
-      if (state.publicKey && rec.owner === state.publicKey) {
-        buttonHtml = `<button class="retire-rec-btn secondary full-width" data-id="${rec.id}">🌱 Retire REC #${rec.id}</button>`;
-      } else {
-        buttonHtml = `<button class="secondary full-width" disabled>Purchased</button>`;
-      }
-    } else {
-      buttonHtml = `<button class="ghost full-width" disabled>🌱 Retired (Cert Issued)</button>`;
+    for (const evt of events) {
+      const id = evt.id || `${evt.txHash}-${evt.ledger}-${evt.eventIndex}`;
+      if (seenEventIds.has(id)) continue;
+      seenEventIds.add(id);
+      logEvent("contract", formatContractEvent(evt));
     }
 
-    card.innerHTML = `
-      <div class="card-header">
-        <span class="source ${rec.source}">${rec.source}</span>
-        <span class="status-badge ${rec.status.toLowerCase()}">${rec.status}</span>
-      </div>
-      <h3>${rec.title}</h3>
-      <p>${rec.amount_mwh} MWh verified clean energy generation on Stellar Soroban.</p>
-      <div class="card-meta">
-        <div><span class="meta-title">Capacity</span><br/><span class="meta-val">${rec.amount_mwh} MWh</span></div>
-        <div><span class="meta-title">Price</span><br/><span class="meta-val">${rec.price_xlm} XLM</span></div>
-      </div>
-      <div class="card-footer">${buttonHtml}</div>
-    `;
-
-    els.creditGrid.appendChild(card);
-  });
-
-  // Re-attach grid button events
-  document.querySelectorAll(".buy-rec-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const id = e.target.getAttribute("data-id");
-      els.recIdInput.value = id;
-      els.contractMethodSelect.value = "buy_rec";
-      els.modeContractBtn.click();
-      invokeSorobanContract();
-    });
-  });
-
-  document.querySelectorAll(".retire-rec-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const id = e.target.getAttribute("data-id");
-      els.recIdInput.value = id;
-      els.contractMethodSelect.value = "retire_rec";
-      els.modeContractBtn.click();
-      invokeSorobanContract();
-    });
-  });
+    eventPollStartLedger = nextStartLedger;
+  } catch (error) {
+    logEvent("system", `Event poll warning: ${error.message || error}`);
+  }
 }
 
-// Initialize Contract Info
+function startEventStream() {
+  stopEventStream();
+  pollContractEventsOnce();
+  eventPollTimer = window.setInterval(pollContractEventsOnce, 8000);
+  logEvent("system", "Soroban RPC event stream started (polling every 8s).");
+}
+
+function stopEventStream() {
+  if (eventPollTimer) {
+    window.clearInterval(eventPollTimer);
+    eventPollTimer = null;
+  }
+}
+
 async function loadContractInfo() {
   try {
     const res = await fetch("./contract-info.json");
-    if (res.ok) {
-      const info = await res.json();
-      if (info.contractId) {
-        activeContractId = info.contractId;
-        els.contractIdDisplay.textContent = info.contractId;
-        logEvent("system", `Loaded deployed Soroban Contract ID: ${info.contractId}`);
-      }
+    if (!res.ok) return;
+    const info = await res.json();
+    if (info.contractId) {
+      activeContractId = info.contractId;
+      els.contractIdDisplay.textContent = info.contractId;
+      logEvent("system", `Loaded marketplace contract: ${info.contractId}`);
     }
-  } catch (e) {
+    if (info.rewardTokenContractId && els.rewardContractDisplay) {
+      rewardContractId = info.rewardTokenContractId;
+      els.rewardContractDisplay.textContent = info.rewardTokenContractId;
+      logEvent("system", `Loaded reward token contract: ${info.rewardTokenContractId}`);
+    }
+    if (info.interactionTxHash) {
+      logEvent("tx", `Last deployment interaction: ${info.interactionTxHash}`);
+    }
+  } catch {
     els.contractIdDisplay.textContent = DEFAULT_CONTRACT_ID;
   }
 }
 
-// Event Listeners
 function initEventListeners() {
-  els.mobileMenuBtn?.addEventListener("click", () => {
-    els.headerNav?.classList.toggle("open");
-  });
-
   els.walletTypeSelect.addEventListener("change", (e) => {
     state.walletType = e.target.value;
     if (state.walletType === "web") {
@@ -569,7 +537,7 @@ function initEventListeners() {
   els.generateKeyBtn.addEventListener("click", () => {
     const kp = SDK.Keypair.random();
     els.secretKeyInput.value = kp.secret();
-    setWalletMessage("Generated new testnet secret key.", "success");
+    setWalletMessage("Generated new secret key.", "success");
   });
 
   els.connectBtn.addEventListener("click", connectWallet);
@@ -577,7 +545,16 @@ function initEventListeners() {
   els.refreshBalanceBtn.addEventListener("click", fetchBalance);
   els.fundAccountBtn.addEventListener("click", fundViaFriendbot);
 
-  // Tab Switching
+  els.copyKeyBtn?.addEventListener("click", () => {
+    navigator.clipboard.writeText("GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P");
+    setWalletMessage("Copied testnet demo key to clipboard.", "success");
+  });
+
+  els.fillDestinationBtn?.addEventListener("click", () => {
+    els.destinationInput.value = "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P";
+    setWalletMessage("Filled destination address with testnet key.", "success");
+  });
+
   els.modePaymentBtn.addEventListener("click", () => {
     els.modePaymentBtn.classList.add("active");
     els.modeContractBtn.classList.remove("active");
@@ -594,47 +571,26 @@ function initEventListeners() {
 
   els.contractMethodSelect.addEventListener("change", (e) => {
     if (e.target.value === "create_rec") {
-      els.createFieldsGroup.classList.remove("hidden");
+      els.mwhLabel.classList.remove("hidden");
     } else {
-      els.createFieldsGroup.classList.add("hidden");
+      els.mwhLabel.classList.add("hidden");
     }
-  });
-
-  els.eventFilterSelect?.addEventListener("change", applyEventFilter);
-
-  // Modal Triggers
-  const openModal = () => els.createModal.classList.remove("hidden");
-  const closeModal = () => els.createModal.classList.add("hidden");
-
-  els.createRecModalBtn?.addEventListener("click", openModal);
-  els.openCreateModalLink?.addEventListener("click", openModal);
-  els.closeCreateModalBtn?.addEventListener("click", closeModal);
-
-  els.closeCertModalBtn?.addEventListener("click", () => els.certModal.classList.add("hidden"));
-
-  els.modalCreateForm?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const id = Number(document.querySelector("#modalRecId").value);
-    const mwh = Number(document.querySelector("#modalRecMwh").value);
-    const price = Number(document.querySelector("#modalRecPrice").value);
-    const source = document.querySelector("#modalRecSource").value;
-
-    els.recIdInput.value = id;
-    els.recMwhInput.value = mwh;
-    document.querySelector("#recPriceInput").value = price * 10000000;
-    document.querySelector("#recSourceSelect").value = source;
-
-    els.contractMethodSelect.value = "create_rec";
-    closeModal();
-    invokeSorobanContract();
   });
 
   els.paymentForm.addEventListener("submit", sendPayment);
   els.contractForm.addEventListener("submit", invokeSorobanContract);
+
+  document.querySelectorAll(".buy-rec-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const recId = e.target.getAttribute("data-id");
+      els.recIdInput.value = recId;
+      els.contractMethodSelect.value = "buy_rec";
+      els.modeContractBtn.click();
+      invokeSorobanContract();
+    });
+  });
 }
 
-// Launch
 loadContractInfo();
 initEventListeners();
-renderGrid();
-setDisconnected("Select wallet provider and click Connect.");
+setDisconnected("Choose wallet type and click Connect.");

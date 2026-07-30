@@ -1,43 +1,91 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{symbol_short, Env};
+use soroban_sdk::{symbol_short, Address, Env};
+
+fn setup_marketplace(env: &Env) -> (Address, Address, RecMarketplaceContractClient<'static>, RewardTokenContractClient<'static>) {
+    let reward_contract_id = env.register_contract(None, RewardTokenContract);
+    let reward_client = RewardTokenContractClient::new(env, &reward_contract_id);
+
+    let marketplace_contract_id = env.register_contract(None, RecMarketplaceContract);
+    let marketplace_client = RecMarketplaceContractClient::new(env, &marketplace_contract_id);
+
+    let admin = Address::generate(env);
+    marketplace_client.initialize(&admin, &reward_contract_id);
+
+    (admin, reward_contract_id, marketplace_client, reward_client)
+}
 
 #[test]
-fn test_create_buy_and_retire_rec() {
+fn test_create_rec_and_get_rec() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, RecMarketplaceContract);
-    let client = RecMarketplaceContractClient::new(&env, &contract_id);
+    let (admin, _, marketplace, _) = setup_marketplace(&env);
 
-    let admin = Address::generate(&env);
-    let buyer = Address::generate(&env);
+    assert!(marketplace.create_rec(&admin, &101, &50, &10_000_000, &symbol_short!("solar")));
+    assert_eq!(marketplace.get_rec_count(), 1);
 
-    client.initialize(&admin);
-
-    let success = client.create_rec(&admin, &101, &50, &10000000, &symbol_short!("solar"));
-    assert!(success);
-
-    assert_eq!(client.get_rec_count(), 1);
-
-    let item = client.get_rec(&101).unwrap();
-    assert_eq!(item.id, 101);
-    assert_eq!(item.is_sold, false);
-    assert_eq!(item.is_retired, false);
-
-    let bought = client.buy_rec(&buyer, &101);
-    assert!(bought);
-
-    let updated_item = client.get_rec(&101).unwrap();
-    assert_eq!(updated_item.is_sold, true);
-    assert_eq!(updated_item.owner, buyer);
-
-    let retired = client.retire_rec(&buyer, &101);
-    assert!(retired);
-    assert_eq!(client.get_retirement_count(), 1);
-
-    let final_item = client.get_rec(&101).unwrap();
-    assert_eq!(final_item.is_retired, true);
+    let rec = marketplace.get_rec(&101).unwrap();
+    assert_eq!(rec.id, 101);
+    assert_eq!(rec.amount_mwh, 50);
+    assert_eq!(rec.is_sold, false);
+    assert_eq!(rec.owner, admin);
 }
 
+#[test]
+fn test_inter_contract_communication() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (admin, _, marketplace, reward) = setup_marketplace(&env);
+    let buyer = Address::generate(&env);
+
+    marketplace.create_rec(&admin, &201, &100, &20_000_000, &symbol_short!("wind"));
+    assert_eq!(reward.balance_of(&buyer), 0);
+
+    assert!(marketplace.buy_rec(&buyer, &201));
+    assert_eq!(reward.balance_of(&buyer), 10_000_000);
+
+    let rec = marketplace.get_rec(&201).unwrap();
+    assert!(rec.is_sold);
+    assert_eq!(rec.owner, buyer);
+}
+
+#[test]
+#[should_panic(expected = "REC ID already exists")]
+fn test_duplicate_rec_id_panics() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (admin, _, marketplace, _) = setup_marketplace(&env);
+    marketplace.create_rec(&admin, &301, &10, &5_000_000, &symbol_short!("hydro"));
+    marketplace.create_rec(&admin, &301, &20, &6_000_000, &symbol_short!("wind"));
+}
+
+#[test]
+#[should_panic(expected = "REC is already sold")]
+fn test_buy_rec_twice_panics() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (admin, _, marketplace, _) = setup_marketplace(&env);
+    let buyer = Address::generate(&env);
+
+    marketplace.create_rec(&admin, &401, &10, &5_000_000, &symbol_short!("solar"));
+    marketplace.buy_rec(&buyer, &401);
+    marketplace.buy_rec(&buyer, &401);
+}
+
+#[test]
+fn test_get_rec_count_increments() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (admin, _, marketplace, _) = setup_marketplace(&env);
+    assert_eq!(marketplace.get_rec_count(), 0);
+
+    marketplace.create_rec(&admin, &501, &5, &1_000_000, &symbol_short!("bio"));
+    marketplace.create_rec(&admin, &502, &5, &1_000_000, &symbol_short!("bio"));
+    assert_eq!(marketplace.get_rec_count(), 2);
+}

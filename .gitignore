@@ -5,5 +5,8 @@ Cargo.lock
 contracts/**/Cargo.lock
 .env
 .env.local
+.vercel
+dist/
 *.png
+*.tgz
 .DS_Store

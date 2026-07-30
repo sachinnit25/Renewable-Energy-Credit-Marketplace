@@ -1,136 +1,179 @@
-# Renewable Energy Credit (REC) Marketplace (Stellar & Soroban)
+# Renewable Energy Credit Marketplace (Stellar & Soroban)
 
-An advanced decentralized **Renewable Energy Credit (REC) Marketplace** built on **Stellar Testnet** and **Soroban Smart Contracts**, featuring inter-contract communication, real-time telemetry streaming, automated CI/CD pipelines, mobile-responsive UI, and unit test suites.
-
----
-
-## 🚀 Live Demo & Explorer Verifications
-
-- 🌐 **Live Demo URL**: [https://frontend-eta-seven-24.vercel.app](https://frontend-eta-seven-24.vercel.app)
-- 📜 **Deployed Soroban Contract Address**: [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ)
-- 🔗 **Verifiable On-Chain Tx Hash**: [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81)
-- 📦 **WASM Code Hash**: `c05244703689bbbe34ca994fbc30b39837e76a665405e440d0d61b903ad3870c`
+An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Testnet** and **Soroban Smart Contracts**, featuring inter-contract communication, real-time event streaming, CI/CD, and a mobile-responsive frontend.
 
 ---
 
-## 📑 Submission Checklist & Requirements Compliance
+## Live Demo & On-Chain Verification
 
-- [x] **Public GitHub Repository**: Clean codebase without EVM/Solidity artifacts.
-- [x] **README with Complete Documentation**: Includes architecture, inter-contract workflow, test instructions, and setup guides.
-- [x] **Minimum 10+ Meaningful Commits**: Clean commit history documenting smart contract, UI, testing, and CI/CD iterations.
-- [x] **Live Demo Link**: Hosted on Vercel at [frontend-eta-seven-24.vercel.app](https://frontend-eta-seven-24.vercel.app).
-- [x] **Contract Deployment Address**: `CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ` on Stellar Testnet.
-- [x] **Verifiable Transaction Hash**: `0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81` on Stellar Explorer.
-- [x] **Mobile Responsive UI**: Mobile-first glassmorphism design with responsive drawer navigation and tabbed views.
-- [x] **Inter-Contract Communication**: Soroban inter-contract interface (`ExternalRegistryClient`) for recording credit retirements.
-- [x] **Event Streaming & Real-Time Telemetry**: Real-time Soroban RPC event log streaming (`rec:created`, `rec:purchased`, `rec:retired`).
-- [x] **CI/CD Pipeline Setup**: GitHub Actions workflow validating smart contracts, lints, and running 5+ unit tests automatically on push.
-- [x] **Passing Test Suite**: 5+ unit and integration tests passing cleanly via `npm test`.
+| Resource | Link |
+|---|---|
+| **Live Demo** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **Marketplace Contract** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
+| **Deployment Tx Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
+| **GitHub Repository** | [sachinnit25/Renewable-Energy-Credit-Marketplace](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
+| **Demo Video** | Record using [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) and paste your Loom/YouTube link here before final submission |
 
 ---
 
-## 🏗️ Architecture & Inter-Contract Flow
+## Submission Checklist
+
+### Required
+
+- [x] **Public GitHub repository**
+- [x] **README with complete documentation** (this file)
+- [x] **Minimum 10+ meaningful commits** (19+ commits in history)
+- [x] **Live demo link** — [Vercel deployment](https://frontend-eta-seven-24.vercel.app)
+- [x] **Contract deployment address** — see [contract-info.json](./contract-info.json)
+- [x] **Transaction hash for contract interaction** — see `interactionTxHash` in contract-info.json
+- [x] **Screenshot: mobile responsive UI** — [`screens/mobile.png`](./screens/mobile.png)
+- [x] **Screenshot: CI/CD pipeline** — [`screens/ci.png`](./screens/ci.png)
+- [x] **Screenshot: test output (3+ passing tests)** — [`screens/tests.png`](./screens/tests.png)
+- [ ] **Demo video link (1–2 min)** — record per [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) and add URL above
+
+### Technical Requirements
+
+- [x] **Advanced smart contract development** — Soroban Rust contracts with storage, auth, events
+- [x] **Inter-contract communication** — `buy_rec` invokes `RewardTokenContract::mint`
+- [x] **Event streaming & real-time updates** — Soroban RPC `getEvents` polling in frontend
+- [x] **CI/CD pipeline** — [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)
+- [x] **Smart contract deployment workflow** — [`scripts/deploy_soroban.mjs`](./scripts/deploy_soroban.mjs)
+- [x] **Mobile responsive frontend** — CSS breakpoints at 900px and 560px
+- [x] **Error handling & loading states** — 3 categorized error types + pending/success UI
+- [x] **Tests for contracts and frontend** — 5 Rust tests + 6 JS tests
+- [x] **Production-ready architecture** — separated `lib/`, deployment scripts, contract metadata
+- [x] **Documentation & demo presentation** — README, DEMO_SCRIPT, CONTRIBUTING
+
+---
+
+## Architecture
 
 ```mermaid
-graph TD
-    Client[Web Frontend / Mobile UI] -->|1. Connect Wallet| Wallet[Freighter / Web Wallet]
-    Client -->|2. Invoke buy_rec / retire_rec| SorobanContract[Soroban REC Marketplace Contract]
-    SorobanContract -->|3. Record Retirement| RegistryContract[External Registry Contract Interface]
-    SorobanContract -->|4. Emit Event Telemetry| EventStream[Soroban Event Stream RPC]
-    EventStream -->|5. Real-Time Telemetry Log| Client
+flowchart LR
+  subgraph Frontend
+    UI[React App + Vite]
+    Events[Event Stream Poll]
+  end
+  subgraph Stellar Testnet
+    RPC[Soroban RPC]
+    HZ[Horizon]
+    MP[RecMarketplaceContract]
+    RT[RewardTokenContract]
+  end
+  UI -->|invoke create_rec / buy_rec| RPC
+  UI -->|XLM payments| HZ
+  Events -->|getEvents| RPC
+  MP -->|inter-contract mint| RT
 ```
+
+### Smart Contracts (`contracts/soroban_rec/src/lib.rs`)
+
+| Contract | Methods |
+|---|---|
+| **RewardTokenContract** | `mint`, `balance_of` |
+| **RecMarketplaceContract** | `initialize`, `create_rec`, `buy_rec`, `get_rec`, `get_rec_count` |
+
+On purchase, the marketplace calls the reward token contract to mint 10 RECT tokens to the buyer (inter-contract communication).
 
 ---
 
-## ⚙️ Smart Contract Architecture (Soroban Rust)
-
-The Soroban smart contract is located in `contracts/soroban_rec/src/lib.rs`.
-
-### Inter-Contract Communication Interface
-
-```rust
-#[contractclient(name = "ExternalRegistryClient")]
-pub trait ExternalRegistryInterface {
-    fn verify_certificate(env: Env, rec_id: u64, amount_mwh: u32) -> bool;
-    fn record_retirement(env: Env, rec_id: u64, owner: Address) -> bool;
-}
-```
-
-### Contract Methods
-
-1. **`initialize(admin: Address)`**: Initializes contract ownership and counters.
-2. **`set_registry_contract(registry: Address)`**: Configures inter-contract registry address.
-3. **`create_rec(creator, id, amount_mwh, price_stroops, source)`**: Mints/lists a new REC on-chain. Emits `rec:created` event.
-4. **`buy_rec(buyer, id)`**: Purchases a REC lot with XLM. Emits `rec:purchased` event.
-5. **`retire_rec(owner, id)`**: Retires REC, issues carbon offset certificate, and invokes inter-contract registry call. Emits `rec:retired` event.
-6. **`get_rec(id) -> Option<RecItem>`**: Queries on-chain REC metadata and ownership state.
-7. **`get_rec_count() -> u64`**: Returns total RECs registered.
-8. **`get_retirement_count() -> u64`**: Returns total retired RECs.
-
----
-
-## 🧪 Testing Suite & Verification
-
-The project includes unit and integration tests covering contract state transitions, error categorization, telemetry event formatting, and retirement certificate generation.
-
-### Run Tests
-
-```bash
-npm test
-```
-
-### Test Output
-
-```
-✔ 1. REC Input Validation - rejects invalid inputs and accepts valid attributes
-✔ 2. Contract State Machine - processes buy and retirement state transitions correctly
-✔ 3. Categorized Error Handling System - maps raw errors into 3 distinct categories
-✔ 4. Real-time Event Telemetry Serialization - formats on-chain event streams
-✔ 5. Inter-contract Retirement Certificate Generator - verifies certificate proof hash
-
-ℹ tests 5
-ℹ suites 0
-ℹ pass 5
-ℹ fail 0
-```
-
----
-
-## 🔄 CI/CD Pipeline Setup
-
-The GitHub Actions workflow is located at `.github/workflows/ci.yml`.
-
-### Workflow Jobs
-1. **`contract-validation`**: Verifies Rust syntax and compiles target `wasm32-unknown-unknown`.
-2. **`unit-and-integration-tests`**: Runs Node.js test suite (`npm test`).
-3. **`build-verification`**: Ensures index files and production assets are intact before deployment.
-
----
-
-## 🛠️ Local Development & Setup Instructions
+## Local Setup
 
 ### Prerequisites
-- Node.js (v18+)
-- [Freighter Wallet Extension](https://www.freighter.app/) (Set network to **Stellar Testnet**)
 
-### 1. Installation
+- Node.js 18+
+- Rust + `wasm32-unknown-unknown` target (for contract development)
+- [Freighter Wallet](https://www.freighter.app/) on Stellar Testnet
+
+### Install & Run
 
 ```bash
 git clone https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace.git
 cd Renewable-Energy-Credit-Marketplace
 npm install
+npm run dev
 ```
 
-### 2. Run Tests
+Open `http://localhost:3000` (or the port shown by `vite`).
+
+### Run Tests
 
 ```bash
-npm test
+npm test                 # 6 frontend unit tests
+npm run test:contracts   # 5 Soroban contract tests
+npm run test:all         # both suites
 ```
 
-### 3. Run Local Dev Server
+### Build & Deploy Contract
 
 ```bash
-npm start
+cd contracts/soroban_rec
+cargo build --target wasm32-unknown-unknown --release
+cd ../..
+npm run deploy:contract   # deploys reward + marketplace, initializes, writes contract-info.json
+npm run interact:contract # optional: create_rec on-chain and update interactionTxHash
 ```
 
-Open `http://localhost:3000` or `http://localhost:5173` in your browser.
+### Capture Submission Screenshots
+
+```bash
+npm install -D playwright
+npx playwright install chromium
+npm run capture-screenshots
+```
+
+Outputs: `screens/mobile.png`, `screens/ci.png`, `screens/tests.png`
+
+---
+
+## Frontend Features
+
+1. **Multi-wallet support** — Freighter extension or testnet keypair (auto-generate + Friendbot funding)
+2. **Real Soroban contract calls** — `create_rec`, `buy_rec`, `get_rec` via Soroban RPC (simulate + sign + submit)
+3. **Live event stream** — polls Soroban RPC `getEvents` every 8 seconds for contract events
+4. **Error categories** — Wallet Provider, Network/Environment, Account & Contract Execution
+5. **Mobile responsive layout** — single-column stack below 560px viewport
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR to `main`/`master`:
+
+1. Install Node.js 20 and Rust (wasm32 target)
+2. `npm ci` → `npm test` (frontend)
+3. `cargo test` (Soroban contracts)
+4. `cargo build --target wasm32-unknown-unknown --release`
+
+---
+
+## Wallet Integration
+
+| Provider | Usage |
+|---|---|
+| **Freighter** | Primary — connect, sign Soroban + payment transactions |
+| **Web Wallet** | Fallback — secret key generation, Friendbot funding, local signing |
+
+Ensure Freighter network is **Stellar Testnet** (`Test SDF Network ; September 2015`).
+
+---
+
+## Project Structure
+
+```
+├── contracts/soroban_rec/   # Soroban Rust smart contracts + tests
+├── lib/                     # Shared Soroban helpers (browser + Node)
+├── scripts/                 # Deploy, interact, screenshot capture
+├── test/                    # Frontend unit tests
+├── screens/                 # Submission screenshots & artifacts
+├── index.html               # Main app entry
+├── main.js                  # Wallet, Soroban RPC, event streaming
+├── contract-info.json       # Deployed contract metadata
+└── .github/workflows/ci.yml # CI/CD
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE).

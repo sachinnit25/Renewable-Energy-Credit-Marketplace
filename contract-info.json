@@ -4,8 +4,10 @@
   "horizonUrl": "https://horizon-testnet.stellar.org",
   "networkPassphrase": "Test SDF Network ; September 2015",
   "contractId": "CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ",
+  "rewardTokenContractId": null,
   "wasmHash": "c05244703689bbbe34ca994fbc30b39837e76a665405e440d0d61b903ad3870c",
   "deployer": "GB6PSX6SXNBY7TO3IQEZ4PY3LYXDXR7OJFQ6QPPHRYNURKNMFTBMPTIH",
   "uploadTxHash": "0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81",
+  "interactionTxHash": "0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81",
   "deployedAt": "2026-07-27T15:42:30.060Z"
 }

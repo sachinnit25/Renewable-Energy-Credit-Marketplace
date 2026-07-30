@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI / CD Pipeline
 
 on:
   push:
@@ -7,46 +7,45 @@ on:
     branches: [ main, master ]
 
 jobs:
-  contract-validation:
-    name: Smart Contract Validation & Syntax Check
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust toolchain
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup Rust & WASM Target
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - name: Contract Check
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Run Frontend Unit Tests
+        run: npm test
+
+      - name: Run Soroban Contract Unit Tests
         run: |
           cd contracts/soroban_rec
-          cargo check --target wasm32-unknown-unknown
+          cargo test
 
-  unit-and-integration-tests:
-    name: Frontend & Integration Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - name: Run Integration Tests
-        run: node --test test/*.test.js
-
-  build-verification:
-    name: Production Build Verification
-    needs: [contract-validation, unit-and-integration-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - name: Verify Index Files
+      - name: Compile Soroban Rust Smart Contract
         run: |
-          test -f index.html
-          test -f frontend/index.html
-          test -f main.js
-          echo "All production static files verified successfully."
+          cd contracts/soroban_rec
+          cargo build --target wasm32-unknown-unknown --release
 
+      - name: Save test output artifact
+        if: always()
+        run: npm test > screens/tests-output.txt 2>&1 || true
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: screens/tests-output.txt

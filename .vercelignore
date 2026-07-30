@@ -1,0 +1,9 @@
+node_modules
+target
+contracts/**/target
+Cargo.lock
+*.tgz
+*.png
+.git
+.github
+screens
