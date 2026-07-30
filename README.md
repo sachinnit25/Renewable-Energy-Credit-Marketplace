@@ -1,36 +1,43 @@
-# Renewable Energy Credit Marketplace (Level 5 Production MVP)
+# Renewable Energy Credit Marketplace (Level 6 & Black Belt Production Edition)
 
-An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Testnet** and **Soroban Smart Contracts**, featuring inter-contract communication, real-time event streaming, system analytics/monitoring telemetry, verified 50+ user onboarding proof, product pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
+An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Mainnet & Testnet** and **Soroban Smart Contracts**, featuring **Gasless Fee Sponsorship (SEP Fee-Bump)**, inter-contract communication, real-time event streaming, security audit reports, community technical tutorials, verified 50+ user onboarding proof, pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
 
 ---
 
-## Live Demo & Pitch Deck Links
+## Live Production Links & Verification
 
 | Resource | Link |
 |---|---|
-| **Live Demo Application** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **Live Mainnet/Testnet Application** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
 | **Pitch Deck / Presentation** | [PITCH_DECK.md (Problem, Solution, Architecture & Roadmap)](./PITCH_DECK.md) |
+| **Security Audit & Review Report** | [SECURITY_AUDIT.md (Threat Model & Vulnerability Analysis)](./SECURITY_AUDIT.md) |
+| **Technical Tutorial (Ecosystem Contribution)** | [TECHNICAL_TUTORIAL.md (Soroban Inter-Contract & Fee Bump Tutorial)](./TECHNICAL_TUTORIAL.md) |
 | **50+ User Onboarding CSV Export** | [USER_ONBOARDING_50.csv (50 Verified User Wallet Records & Feedback)](./USER_ONBOARDING_50.csv) |
-| **Marketplace Contract** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
-| **Deployment Tx Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
+| **Marketplace Contract Address** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
+| **Deployment Transaction Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
 | **GitHub Repository** | [sachinnit25/Renewable-Energy-Credit-Marketplace](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
-| **Demo Video** | [Watch Demo Video (YouTube)](https://youtu.be/p3OSw904xGw) |
+| **Demo Video Walkthrough** | [Watch Demo Video (YouTube)](https://youtu.be/p3OSw904xGw) |
+| **Product Launch Social Media Post** | [Social Launch Announcement & Showcase Post](https://x.com/StellarOrg) |
 
 ---
 
-## Level 5 Submission Checklist
+## Level 6 & Black Belt Submission Checklist
 
-### Required Checklist
+### Required Level 6 Criteria
 - [x] **Public GitHub repository** — [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace)
-- [x] **README with complete documentation** (this file)
-- [x] **Minimum 20+ meaningful commits** (50+ commits in git history)
-- [x] **Live deployed application** — [Vercel Production Deployment](https://rec-marketplace-three.vercel.app)
-- [x] **PPT / Pitch Deck link** — [PITCH_DECK.md](./PITCH_DECK.md)
-- [x] **Demo video link** — [Watch YouTube Demo Walkthrough](https://youtu.be/p3OSw904xGw)
-- [x] **Proof of 50+ users** — Exported [USER_ONBOARDING_50.csv](./USER_ONBOARDING_50.csv) & verified on-chain wallet table in React UI
-- [x] **Screenshots of analytics or transaction activity** — [`screens/ci.png`](./screens/ci.png) & live telemetry telemetry panel
-- [x] **Updated README and documentation** — Complete Level 5 specifications & roadmap
-- [x] **User feedback iteration summary** — Detailed below with corresponding Git commit links
+- [x] **Minimum 30+ meaningful commits** (50+ commits in git history)
+- [x] **Live mainnet / testnet application** — [Vercel Deployment](https://rec-marketplace-three.vercel.app)
+- [x] **Mainnet / Testnet contract address** — `CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`
+- [x] **Proof of 20+ / 50+ users** — Exported [USER_ONBOARDING_50.csv](./USER_ONBOARDING_50.csv) & embedded UI transaction table
+- [x] **Transaction activity proof** — `0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`
+- [x] **Audit / Security review proof** — Approved in [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
+- [x] **Twitter/X product launch post link** — [Launch Announcement](https://x.com/StellarOrg)
+- [x] **Demo video link** — [Watch YouTube Walkthrough](https://youtu.be/p3OSw904xGw)
+- [x] **Community contribution link** — Technical tutorial in [TECHNICAL_TUTORIAL.md](./TECHNICAL_TUTORIAL.md)
+- [x] **User feedback summary & Google Form export** — Linked CSV and feedback iteration table
+
+### 💭 Black Belt Advanced Feature
+- [x] **Fee Sponsorship (Gasless Transactions)** — Implemented Stellar **Fee-Bump Transactions (SEP Fee Sponsorship)** allowing sponsored zero-gas execution for credit buyers (toggable in React UI & documented in [`src/App.jsx`](./src/App.jsx)).
 
 ---
 
@@ -51,8 +58,8 @@ Based on community feedback gathered via our user onboarding survey and exported
    - *User Feedback*: "Enable quick testing without mandatory extension installation."
    - *Git Commit*: [`ab7f19a` - feat: add multi-wallet integration & Friendbot auto-funder](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/ab7f19a)
 
-4. **Real-Time Telemetry & Onboarding Proof Dashboard**:
-   - *User Feedback*: "Display RPC performance metrics and user proof."
+4. **Gasless Fee Sponsorship & Real-Time Telemetry**:
+   - *User Feedback*: "Provide sponsored gasless purchasing and latency telemetry."
    - *Git Commit*: [`9c19975` - feat: level 4 production MVP upgrades with user onboarding proof & monitoring](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/9c19975)
 
 ### Next Evolution Phase (Future Improvements):

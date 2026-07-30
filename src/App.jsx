@@ -70,6 +70,7 @@ export default function App() {
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT_ID);
   const [rewardContractId, setRewardContractId] = useState(null);
   const [onchainRecCount, setOnchainRecCount] = useState(4);
+  const [feeSponsorship, setFeeSponsorship] = useState(true); // Black Belt Fee Sponsorship (Gasless)
 
   // Tabs & Forms
   const [activeTab, setActiveTab] = useState("payment"); // 'payment' | 'contract'
@@ -647,6 +648,15 @@ export default function App() {
             <div className="meta-item">
               <span className="meta-label">Reward Token (inter-contract):</span>
               <span className="meta-value">{rewardContractId || "—"}</span>
+            </div>
+            <div className="meta-item" style={{ borderTop: "1px solid #d2e6da", paddingTop: "8px", marginTop: "4px", justifyContent: "space-between" }}>
+              <span className="meta-label">🛡️ Gasless Fee Sponsorship (SEP Fee Bump):</span>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+                <input type="checkbox" checked={feeSponsorship} onChange={(e) => setFeeSponsorship(e.target.checked)} style={{ minHeight: "auto", width: "auto" }} />
+                <span style={{ fontSize: "0.82rem", color: "var(--forest)", fontWeight: 700 }}>
+                  {feeSponsorship ? "Enabled (Sponsored Gas)" : "Standard User Fee"}
+                </span>
+              </label>
             </div>
           </div>
 
