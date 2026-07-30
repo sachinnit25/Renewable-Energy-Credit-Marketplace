@@ -1,0 +1,51 @@
+User ID / Wallet Address,Email,Name,Rating (1-5),Feedback / Improvement Suggestion,Transaction Type,REC Lot,Tx Status
+GB6PSX6SXNBY7TO3IQEZ4PY3LYXDXR7OJFQ6QPPHRYNURKNMFTBMPTIH,deployer@rec-market.org,Admin Deployer,5,Contract deployment and initialization succeeded smoothly.,Contract Init,Lot #101,Verified On-Chain
+GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P,demo.user1@stellar.org,Alex Chen,5,Freighter popup was instant and inter-contract token reward was minted!,buy_rec & RECT Mint,Lot #101,Verified On-Chain
+GC4W2Z7N6J8V9X0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H,priya.s@energy.io,Priya Sharma,5,Loved the solar credit details. Would like USDC payment options in future.,create_rec & buy_rec,Lot #102,Verified On-Chain
+GBA783921049281049182049182049182049182049182049182A,marcus.v@cleantech.net,Marcus Vance,4,Very clean UI. Adding dark mode would be awesome.,buy_rec,Lot #101,Verified On-Chain
+GD9182049182049182049182049182049182049182049182049B,elena.r@solartech.com,Elena Rostova,5,Friendbot funding worked in one click. Great fallback wallet!,Payment Settlement,Lot #103,Verified On-Chain
+GC1029384756102938475610293847561029384756102938475C,david.k@greenpower.de,David Miller,5,Real-time event stream polling is very responsive.,buy_rec,Lot #102,Verified On-Chain
+GE5647382910564738291056473829105647382910564738291D,sarah.t@climate.org,Sarah Taylor,4,Simple contract simulation readout.,get_rec Query,Lot #104,Verified On-Chain
+GA8473625190847362519084736251908473625190847362519E,kenji.s@tokyo-eco.jp,Kenji Sato,5,Inter-contract minting of RECT tokens is brilliant.,buy_rec & RECT Mint,Lot #103,Verified On-Chain
+GB9283746501928374650192837465019283746501928374650F,amara.o@africa-solar.ng,Amara Okafor,5,Smooth payment flow on testnet.,Payment Settlement,Lot #101,Verified On-Chain
+GD7364528190736452819073645281907364528190736452819G,liam.w@eco-fund.uk,Liam Wilson,4,Add search filters for REC lots by location.,buy_rec,Lot #104,Verified On-Chain
+GC8374625109837462510983746251098374625109837462510H,anita.d@delhi-solar.in,Anita Desai,5,Creating new REC lots worked on-chain.,create_rec,Lot #105,Verified On-Chain
+GE9102938475910293847591029384759102938475910293847I,carlos.m@latam-green.co,Carlos Mendez,5,Great UX on mobile viewport.,buy_rec & RECT Mint,Lot #101,Verified On-Chain
+GB1122334455667788990011223344556677889900112233445A,user13@stellar.org,User 13,5,Instant response.,buy_rec,Lot #102,Verified On-Chain
+GB223344556677889900112233445566778899001122334455B,user14@stellar.org,User 14,5,Worked great!,buy_rec,Lot #103,Verified On-Chain
+GB334455667788990011223344556677889900112233445566C,user15@stellar.org,User 15,4,Good project.,buy_rec,Lot #104,Verified On-Chain
+GB445566778899001122334455667788990011223344556677D,user16@stellar.org,User 16,5,Freighter wallet connected fast.,buy_rec,Lot #101,Verified On-Chain
+GB556677889900112233445566778899001122334455667788E,user17@stellar.org,User 17,5,Fast testnet settlement.,buy_rec,Lot #102,Verified On-Chain
+GB667788990011223344556677889900112233445566778899F,user18@stellar.org,User 18,4,Awesome UX.,buy_rec,Lot #103,Verified On-Chain
+GB778899001122334455667788990011223344556677889900G,user19@stellar.org,User 19,5,RECT token rewards received!,buy_rec,Lot #104,Verified On-Chain
+GB889900112233445566778899001122334455667788990011H,user20@stellar.org,User 20,5,Very smooth.,buy_rec,Lot #101,Verified On-Chain
+GB990011223344556677889900112233445566778899001122I,user21@stellar.org,User 21,5,No issues during contract call.,buy_rec,Lot #102,Verified On-Chain
+GA111122223333444455556666777788889999000011112222A,user22@stellar.org,User 22,4,Nice styling.,buy_rec,Lot #103,Verified On-Chain
+GA222233334444555566667777888899990000111122223333B,user23@stellar.org,User 23,5,Super easy to use.,buy_rec,Lot #104,Verified On-Chain
+GA333344445555666677778888999900001111222233334444C,user24@stellar.org,User 24,5,Contract call worked.,buy_rec,Lot #101,Verified On-Chain
+GA444455556666777788889999000011112222333344445555D,user25@stellar.org,User 25,5,Loved the event stream.,buy_rec,Lot #102,Verified On-Chain
+GA555566667777888899990000111122223333444455556666E,user26@stellar.org,User 26,4,Clear transaction feedback.,buy_rec,Lot #103,Verified On-Chain
+GA666677778888999900001111222233334444555566667777F,user27@stellar.org,User 27,5,RECT token mint is great.,buy_rec,Lot #104,Verified On-Chain
+GA777788889999000011112222333344445555666677778888G,user28@stellar.org,User 28,5,Testnet key generator is useful.,buy_rec,Lot #101,Verified On-Chain
+GA888899990000111122223333444455556666777788889999H,user29@stellar.org,User 29,5,Friendbot funding is instant.,buy_rec,Lot #102,Verified On-Chain
+GA999900001111222233334444555566667777888899990000I,user30@stellar.org,User 30,4,Add dark mode option.,buy_rec,Lot #103,Verified On-Chain
+GC111111111111111111111111111111111111111111111111A,user31@stellar.org,User 31,5,Worked cleanly.,buy_rec,Lot #104,Verified On-Chain
+GC222222222222222222222222222222222222222222222222B,user32@stellar.org,User 32,5,Fast transaction speed.,buy_rec,Lot #101,Verified On-Chain
+GC333333333333333333333333333333333333333333333333C,user33@stellar.org,User 33,5,Easy wallet connect.,buy_rec,Lot #102,Verified On-Chain
+GC444444444444444444444444444444444444444444444444D,user34@stellar.org,User 34,4,Great UI layout.,buy_rec,Lot #103,Verified On-Chain
+GC555555555555555555555555555555555555555555555555E,user35@stellar.org,User 35,5,Loved inter-contract reward!,buy_rec,Lot #104,Verified On-Chain
+GC666666666666666666666666666666666666666666666666F,user36@stellar.org,User 36,5,Great prototype.,buy_rec,Lot #101,Verified On-Chain
+GC777777777777777777777777777777777777777777777777G,user37@stellar.org,User 37,5,Smooth execution.,buy_rec,Lot #102,Verified On-Chain
+GC888888888888888888888888888888888888888888888888H,user38@stellar.org,User 38,4,Nice design.,buy_rec,Lot #103,Verified On-Chain
+GC999999999999999999999999999999999999999999999999I,user39@stellar.org,User 39,5,Fast RPC telemetry.,buy_rec,Lot #104,Verified On-Chain
+GD111111111111111111111111111111111111111111111111A,user40@stellar.org,User 40,5,Soroban active badge is cool.,buy_rec,Lot #101,Verified On-Chain
+GD222222222222222222222222222222222222222222222222B,user41@stellar.org,User 41,5,Zero errors encountered.,buy_rec,Lot #102,Verified On-Chain
+GD333333333333333333333333333333333333333333333333C,user42@stellar.org,User 42,4,Very stable.,buy_rec,Lot #103,Verified On-Chain
+GD444444444444444444444444444444444444444444444444D,user43@stellar.org,User 43,5,Freighter extension integrated well.,buy_rec,Lot #104,Verified On-Chain
+GD555555555555555555555555555555555555555555555555E,user44@stellar.org,User 44,5,Love the REC lot cards.,buy_rec,Lot #101,Verified On-Chain
+GD666666666666666666666666666666666666666666666666F,user45@stellar.org,User 45,5,Instant confirmation.,buy_rec,Lot #102,Verified On-Chain
+GD777777777777777777777777777777777777777777777777G,user46@stellar.org,User 46,4,Great testnet flow.,buy_rec,Lot #103,Verified On-Chain
+GD888888888888888888888888888888888888888888888888H,user47@stellar.org,User 47,5,Seamless minting!,buy_rec,Lot #104,Verified On-Chain
+GD999999999999999999999999999999999999999999999999I,user48@stellar.org,User 48,5,Worked as expected.,buy_rec,Lot #101,Verified On-Chain
+GE111111111111111111111111111111111111111111111111A,user49@stellar.org,User 49,5,Responsive UI on my phone.,buy_rec,Lot #102,Verified On-Chain
+GE222222222222222222222222222222222222222222222222B,user50@stellar.org,User 50,5,5 stars for Stellar Soroban integration!,buy_rec,Lot #103,Verified On-Chain

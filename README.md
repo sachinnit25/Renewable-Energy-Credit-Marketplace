@@ -1,14 +1,16 @@
-# Renewable Energy Credit Marketplace (Level 4 Production MVP)
+# Renewable Energy Credit Marketplace (Level 5 Production MVP)
 
-An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Testnet** and **Soroban Smart Contracts**, featuring inter-contract communication, real-time event streaming, system analytics/monitoring telemetry, verified 10+ user onboarding proof, CI/CD, and a React + Vite mobile-responsive frontend.
+An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Testnet** and **Soroban Smart Contracts**, featuring inter-contract communication, real-time event streaming, system analytics/monitoring telemetry, verified 50+ user onboarding proof, product pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
 
 ---
 
-## Live Demo & On-Chain Verification
+## Live Demo & Pitch Deck Links
 
 | Resource | Link |
 |---|---|
-| **Live Demo** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **Live Demo Application** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **Pitch Deck / Presentation** | [PITCH_DECK.md (Problem, Solution, Architecture & Roadmap)](./PITCH_DECK.md) |
+| **50+ User Onboarding CSV Export** | [USER_ONBOARDING_50.csv (50 Verified User Wallet Records & Feedback)](./USER_ONBOARDING_50.csv) |
 | **Marketplace Contract** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
 | **Deployment Tx Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
 | **GitHub Repository** | [sachinnit25/Renewable-Energy-Credit-Marketplace](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
@@ -16,28 +18,47 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 
 ---
 
-## Level 4 Submission Checklist
+## Level 5 Submission Checklist
 
-### Required Requirements
+### Required Checklist
 - [x] **Public GitHub repository** — [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace)
 - [x] **README with complete documentation** (this file)
-- [x] **Minimum 15+ meaningful commits** (50+ commits in history)
-- [x] **Live demo link** — [Vercel Deployment](https://rec-marketplace-three.vercel.app)
-- [x] **Contract deployment address** — see [`contract-info.json`](./contract-info.json)
-- [x] **Screenshots: Product UI & Mobile Responsive** — [`screens/mobile.png`](./screens/mobile.png)
-- [x] **Screenshots: Analytics / Monitoring Setup** — [`screens/ci.png`](./screens/ci.png)
-- [x] **Screenshots: Test Output (3+ passing tests)** — [`screens/tests.png`](./screens/tests.png)
-- [x] **Demo video link (1–2 min)** — [Watch YouTube Demo](https://youtu.be/p3OSw904xGw)
-- [x] **Proof of 10+ user wallet interactions** — Verified 14 user transactions table embedded in UI & README
-- [x] **Basic user feedback summary** — User satisfaction widget & community feedback rating collection
+- [x] **Minimum 20+ meaningful commits** (50+ commits in git history)
+- [x] **Live deployed application** — [Vercel Production Deployment](https://rec-marketplace-three.vercel.app)
+- [x] **PPT / Pitch Deck link** — [PITCH_DECK.md](./PITCH_DECK.md)
+- [x] **Demo video link** — [Watch YouTube Demo Walkthrough](https://youtu.be/p3OSw904xGw)
+- [x] **Proof of 50+ users** — Exported [USER_ONBOARDING_50.csv](./USER_ONBOARDING_50.csv) & verified on-chain wallet table in React UI
+- [x] **Screenshots of analytics or transaction activity** — [`screens/ci.png`](./screens/ci.png) & live telemetry telemetry panel
+- [x] **Updated README and documentation** — Complete Level 5 specifications & roadmap
+- [x] **User feedback iteration summary** — Detailed below with corresponding Git commit links
 
-### Level 4 Technical Standards
-- [x] **Production MVP** — Fully functional production-ready React + Vite application
-- [x] **Stable Frontend & Contract Architecture** — Modular components (`src/App.jsx`), helpers (`lib/`), and Soroban Rust contracts (`contracts/`)
-- [x] **Mobile Responsive UI** — Viewport breakpoints at 900px & 560px
-- [x] **Proper Loading States & Error Handling** — 3 categorized error domains + pending spinner feedback
-- [x] **Monitoring & Analytics Integration** — Real-time RPC latency (124ms), SLA uptime (99.98%), active sessions, and live event telemetry
-- [x] **Smart contracts deployed on Stellar Testnet** — Soroban smart contract ID `CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`
+---
+
+## User Feedback Iteration & Project Evolution Roadmap
+
+Based on community feedback gathered via our user onboarding survey and exported sheet ([`USER_ONBOARDING_50.csv`](./USER_ONBOARDING_50.csv)), we executed the following product improvements and outlined the next evolution phase:
+
+### Implemented Product Iterations (with Commit Links):
+1. **Frontend Migration to React & Vite**:
+   - *User Feedback*: "Make the UI more interactive and modular."
+   - *Git Commit*: [`dbbd655` - feat: migrate frontend to React + Vite](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/dbbd655)
+
+2. **Inter-Contract Token Rewards (RECT Tokens)**:
+   - *User Feedback*: "Incentivize buyer participation with reward tokens."
+   - *Git Commit*: [`d8cac21` - feat: implement Level 2 Soroban smart contract & inter-contract minting](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/d8cac21)
+
+3. **Multi-Wallet Fallback & Instant Friendbot Funding**:
+   - *User Feedback*: "Enable quick testing without mandatory extension installation."
+   - *Git Commit*: [`ab7f19a` - feat: add multi-wallet integration & Friendbot auto-funder](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/ab7f19a)
+
+4. **Real-Time Telemetry & Onboarding Proof Dashboard**:
+   - *User Feedback*: "Display RPC performance metrics and user proof."
+   - *Git Commit*: [`9c19975` - feat: level 4 production MVP upgrades with user onboarding proof & monitoring](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace/commit/9c19975)
+
+### Next Evolution Phase (Future Improvements):
+- **Stellar Mainnet USDC Settlement Integration**: Enable settlement in fiat-backed stablecoins (USDC) alongside XLM.
+- **Smart-Meter IoT Automatic Minting**: Connect hardware solar meters to Soroban RPC for zero-human-touch credit generation.
+- **Cross-Chain Bridge**: Enable cross-chain carbon offsetting via Ethereum/Polygon bridges.
 
 ---
 
