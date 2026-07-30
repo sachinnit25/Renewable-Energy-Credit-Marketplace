@@ -12,7 +12,7 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 | **Marketplace Contract** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
 | **Deployment Tx Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
 | **GitHub Repository** | [sachinnit25/Renewable-Energy-Credit-Marketplace](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
-| **Demo Video** [https://youtu.be/p3OSw904xGw]
+| **Demo Video**      |   [https://youtu.be/p3OSw904xGw]
 
 ---
 
@@ -29,7 +29,7 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 - [x] **Screenshot: mobile responsive UI** — [`screens/mobile.png`](./screens/mobile.png)
 - [x] **Screenshot: CI/CD pipeline** — [`screens/ci.png`](./screens/ci.png)
 - [x] **Screenshot: test output (3+ passing tests)** — [`screens/tests.png`](./screens/tests.png)
-- [ ] **Demo video link (1–2 min)** —[https://youtu.be/p3OSw904xGw]
+- [ ] **Demo video link (1–2 min)** —  [https://youtu.be/p3OSw904xGw]
 
 ### Technical Requirements
 
