@@ -106,8 +106,10 @@ async function captureWithPlaywright() {
     <pre class="ok">✔ Run Frontend Unit Tests (6 tests)
 ✔ Run Soroban Contract Unit Tests (5 tests)
 ✔ Compile Soroban Rust Smart Contract (wasm32 release)
+✔ Deploy Smart Contract to Stellar Testnet (CD Step)
+✔ Deploy Frontend Production Build to Vercel (CD Step)
 
-Jobs: build-and-test
+Jobs: build-and-test, deploy-frontend
 Triggers: push/PR to main, master
 Runner: ubuntu-latest</pre>`;
   writeHtmlArtifact("ci-preview.html", ciBody);

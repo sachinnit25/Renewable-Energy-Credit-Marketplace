@@ -2,12 +2,12 @@
 > rec-marketplace@0.1.0 test
 > node --test test/*.test.js
 
-✔ formatXlmBalance formats native XLM correctly (1.325ms)
-✔ categorizeError correctly sorts errors into 3 categories (0.2531ms)
-✔ validatePaymentInput validates Stellar public keys and amounts (0.2416ms)
-✔ recSourceForId maps lot ids to Soroban symbol sources (0.3096ms)
-✔ defaultPriceStroops returns stroop prices per lot (1.2749ms)
-✔ formatContractEvent renders Soroban RPC event payloads (0.5351ms)
+✔ formatXlmBalance formats native XLM correctly (0.856ms)
+✔ categorizeError correctly sorts errors into 3 categories (0.1471ms)
+✔ validatePaymentInput validates Stellar public keys and amounts (0.1508ms)
+✔ recSourceForId maps lot ids to Soroban symbol sources (0.1493ms)
+✔ defaultPriceStroops returns stroop prices per lot (0.8583ms)
+✔ formatContractEvent renders Soroban RPC event payloads (0.2816ms)
 ℹ tests 6
 ℹ suites 0
 ℹ pass 6
@@ -15,4 +15,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 156.4992
+ℹ duration_ms 90.5116
