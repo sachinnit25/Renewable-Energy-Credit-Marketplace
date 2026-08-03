@@ -13,8 +13,8 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 | **Security Audit & Review Report** | [SECURITY_AUDIT.md (Threat Model & Vulnerability Analysis)](./SECURITY_AUDIT.md) |
 | **Technical Tutorial (Ecosystem Contribution)** | [TECHNICAL_TUTORIAL.md (Soroban Inter-Contract & Fee Bump Tutorial)](./TECHNICAL_TUTORIAL.md) |
 | **50+ User Onboarding CSV Export** | [USER_ONBOARDING_50.csv (50 Verified User Wallet Records & Feedback)](./USER_ONBOARDING_50.csv) |
-| **Marketplace Contract Address** | [`CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`](https://stellar.expert/explorer/testnet/contract/CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ) |
-| **Deployment Transaction Hash** | [`0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`](https://stellar.expert/explorer/testnet/tx/0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81) |
+| **Marketplace Contract Address** | [`CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR`](https://stellar.expert/explorer/testnet/contract/CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR) |
+| **Deployment Transaction Hash** | [`4f7f2034b6a7d2c44e2ce2cb9f3a36d09be4a4b1249a62cbfb7a2e1cebc39d94`](https://stellar.expert/explorer/testnet/tx/4f7f2034b6a7d2c44e2ce2cb9f3a36d09be4a4b1249a62cbfb7a2e1cebc39d94) |
 | **GitHub Repository** | [sachinnit25/Renewable-Energy-Credit-Marketplace](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
 | **Demo Video Walkthrough** | [Watch Demo Video (YouTube)](https://youtu.be/p3OSw904xGw) |
 | **Product Launch Social Media Post** | [Social Launch Announcement & Showcase Post](https://x.com/StellarOrg) |
@@ -27,9 +27,9 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 - [x] **Public GitHub repository** — [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace)
 - [x] **Minimum 30+ meaningful commits** (50+ commits in git history)
 - [x] **Live mainnet / testnet application** — [Vercel Deployment](https://rec-marketplace-three.vercel.app)
-- [x] **Mainnet / Testnet contract address** — `CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ`
+- [x] **Mainnet / Testnet contract address** — `CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR`
 - [x] **Proof of 20+ / 50+ users** — Exported [USER_ONBOARDING_50.csv](./USER_ONBOARDING_50.csv) & embedded UI transaction table
-- [x] **Transaction activity proof** — `0210a89e51fec9233645ab5cbe9dac5ddcbeb3f38d99dad520bdddaea387ef81`
+- [x] **Transaction activity proof** — `4f7f2034b6a7d2c44e2ce2cb9f3a36d09be4a4b1249a62cbfb7a2e1cebc39d94`
 - [x] **Audit / Security review proof** — Approved in [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 - [x] **Twitter/X product launch post link** — [Launch Announcement](https://x.com/StellarOrg)
 - [x] **Demo video link** — [Watch YouTube Walkthrough](https://youtu.be/p3OSw904xGw)

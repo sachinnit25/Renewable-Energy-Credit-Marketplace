@@ -24,7 +24,9 @@ const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const SOROBAN_RPC_URL = "https://soroban-testnet.stellar.org";
 const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 const EXPLORER_TX = "https://stellar.expert/explorer/testnet/tx/";
-const DEFAULT_CONTRACT_ID = "CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ";
+const DEFAULT_CONTRACT_ID =
+  contractInfo.contractId ||
+  "CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR";
 
 const horizonServer = new HorizonServer(HORIZON_URL);
 const sorobanRpc = createSorobanClient(SDK, SOROBAN_RPC_URL);

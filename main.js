@@ -24,7 +24,7 @@ const SOROBAN_RPC_URL = "https://soroban-testnet.stellar.org";
 const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 const EXPLORER_TX = "https://stellar.expert/explorer/testnet/tx/";
 
-const DEFAULT_CONTRACT_ID = "CDQSQVHPSTEB6T7WW5BJ4HQP76BFCYTTKDPBK22HXWS6JOMNAHO3RMEZ";
+const DEFAULT_CONTRACT_ID = "CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR";
 let activeContractId = DEFAULT_CONTRACT_ID;
 let rewardContractId = null;
 let eventPollStartLedger = null;
