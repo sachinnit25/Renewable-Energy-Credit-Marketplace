@@ -2,12 +2,13 @@
 
 use super::*;
 use soroban_sdk::{symbol_short, Address, Env};
+use soroban_sdk::testutils::Address as _;
 
 fn setup_marketplace(env: &Env) -> (Address, Address, RecMarketplaceContractClient<'static>, RewardTokenContractClient<'static>) {
-    let reward_contract_id = env.register_contract(None, RewardTokenContract);
+    let reward_contract_id = env.register(RewardTokenContract, ());
     let reward_client = RewardTokenContractClient::new(env, &reward_contract_id);
 
-    let marketplace_contract_id = env.register_contract(None, RecMarketplaceContract);
+    let marketplace_contract_id = env.register(RecMarketplaceContract, ());
     let marketplace_client = RecMarketplaceContractClient::new(env, &marketplace_contract_id);
 
     let admin = Address::generate(env);
