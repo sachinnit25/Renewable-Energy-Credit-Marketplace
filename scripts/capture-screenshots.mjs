@@ -43,9 +43,10 @@ function writeHtmlArtifact(filename, body) {
 function startStaticServer() {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
-      let filePath = path.join(root, req.url === "/" ? "index.html" : req.url.split("?")[0]);
+      const dist = path.join(root, "dist");
+      let filePath = path.join(dist, req.url === "/" ? "index.html" : req.url.split("?")[0]);
       if (filePath.endsWith("/")) filePath += "index.html";
-      if (!filePath.startsWith(root)) {
+      if (!filePath.startsWith(dist)) {
         res.writeHead(403);
         res.end();
         return;
