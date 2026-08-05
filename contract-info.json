@@ -3,12 +3,13 @@
   "rpcUrl": "https://soroban-testnet.stellar.org",
   "horizonUrl": "https://horizon-testnet.stellar.org",
   "networkPassphrase": "Test SDF Network ; September 2015",
-  "contractId": "CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR",
-  "rewardTokenContractId": "CBJA4HCD6SLRY3IXNDV5BGIDCBGFEHG43N7IM2DHGM2L2X7I2DHKZR2P",
-  "wasmHash": "db8ec2ba76de9e64550d3c6df6eaf619802ad36367e8af439f345c1d261d48f",
-  "deployer": "GD57ZG722CRRKVAZD5UDIGVCJ2BRTDYRFNFXHNBN5XU36JFNHGZCGYHR",
-  "uploadTxHash": "993309d61102ddc3c7a07a4f24e20d1129307f920dcaeb67da845756d3911507",
-  "initializeTxHash": "36785c9c7d0a5104a372fd6c6db88da9548e5d0dba7210d8163ddfb38ce87b57",
-  "interactionTxHash": "4f7f2034b6a7d2c44e2ce2cb9f3a36d09be4a4b1249a62cbfb7a2e1cebc39d94",
-  "deployedAt": "2026-08-03T14:27:32.000Z"
+  "contractId": "CA7CH4OA3MSBVIN2E5PR52F2ZQDGDBQKTW2EMJTGNCW36HQNEV62OUCF",
+  "rewardTokenContractId": "CAUZHVNRMBWDXK6WVPBZW6ECYZ5Z3XBNAKEZ4UJW36ULI5HE7WJCIJTH",
+  "wasmHash": "db8ec2ba76de9e64550d3c6df6eaf619802ad36367e8af439f345c1d261d48f4",
+  "deployer": "GAMTEDDFFBLCQA5YC5UYCDBCLNIGMQBPPWF7RBAJFA7G434RHPRG24OW",
+  "uploadTxHash": "b2b034ce7400f89a63592249f08a2d4ab0e5b30ccaeb54474c0beb6b6336eae8",
+  "initializeTxHash": "b8b21fae1ca138af6f94db74241fd67ffabf483290b68b63451044f083446c84",
+  "interactionTxHash": "6d2b99fcb68a2667232db209279f7497d5225f30265b7adc726596d36e2197df",
+  "deployedAt": "2026-08-05T16:13:37.409Z",
+  "lastInteractionAt": "2026-08-05T16:14:04.046Z"
 }

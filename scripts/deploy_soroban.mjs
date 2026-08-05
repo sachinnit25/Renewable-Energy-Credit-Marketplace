@@ -61,8 +61,8 @@ async function createContractInstance(keypair, wasmHash, saltLabel) {
     networkPassphrase: NETWORK_PASSPHRASE,
   })
     .addOperation(
-      StellarSdk.Operation.createContract({
-        address: keypair.publicKey(),
+      StellarSdk.Operation.createCustomContract({
+        address: new StellarSdk.Address(keypair.publicKey()),
         wasmHash,
         salt,
       }),
@@ -77,9 +77,18 @@ async function createContractInstance(keypair, wasmHash, saltLabel) {
   console.log(`Create contract (${saltLabel}) tx:`, send.hash);
   await waitForTx(send.hash, `Create contract ${saltLabel}`);
 
-  const contractId = StellarSdk.StrKey.encodeContract(
-    StellarSdk.hash(Buffer.concat([Buffer.from(keypair.publicKey()), salt])),
-  );
+  const txDetails = await rpcServer.getTransaction(send.hash);
+  let contractId;
+  if (txDetails.returnValue) {
+    try {
+      contractId = StellarSdk.Address.fromScVal(txDetails.returnValue).toString();
+    } catch {
+      contractId = StellarSdk.StrKey.encodeContract(txDetails.returnValue.bytes());
+    }
+  }
+  if (!contractId) {
+    throw new Error("Could not parse contractId from tx return value.");
+  }
   return { contractId, txHash: send.hash };
 }
 
