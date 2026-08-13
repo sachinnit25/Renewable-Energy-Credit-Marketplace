@@ -8,7 +8,8 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 
 | Resource | Link |
 |---|---|
-| **Live Mainnet/Testnet Application** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **Live Mainnet/Testnet Application (Vercel)** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
+| **GitHub Pages Live Deployment** | [https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/](https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/) |
 | **Pitch Deck / Presentation** | [PITCH_DECK.md (Problem, Solution, Architecture & Roadmap)](./PITCH_DECK.md) |
 | **Security Audit & Review Report** | [SECURITY_AUDIT.md (Threat Model & Vulnerability Analysis)](./SECURITY_AUDIT.md) |
 | **Technical Tutorial (Ecosystem Contribution)** | [TECHNICAL_TUTORIAL.md (Soroban Inter-Contract & Fee Bump Tutorial)](./TECHNICAL_TUTORIAL.md) |
