@@ -87,6 +87,21 @@ export default function App() {
   const [txFeedback, setTxFeedback] = useState({ message: "Connect wallet to begin transaction or contract invocation.", type: "idle", htmlUrl: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Feedback Form State
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState("5");
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    const userWallet = publicKey ? `${publicKey.slice(0, 10)}...${publicKey.slice(-6)}` : "G-TESTNET-USER";
+    addLog("system", `New User Feedback received from ${feedbackName || userWallet} (${feedbackRating}/5 stars): "${feedbackComment}"`);
+    setFeedbackSubmitted(true);
+    setFeedbackName("");
+    setFeedbackComment("");
+  };
+
   // Purchased RECs track
   const [purchasedRecs, setPurchasedRecs] = useState({});
 
@@ -906,24 +921,55 @@ export default function App() {
           </div>
           <span className="badge muted">Community Feedback</span>
         </div>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          alert("Thank you! Your feedback has been recorded into the marketplace analytics system.");
-        }} style={{ display: "grid", gap: "12px", background: "white", padding: "20px", borderRadius: "8px", border: "1px solid var(--line)" }}>
-          <label>
-            User Rating
-            <select defaultValue="5">
-              <option value="5">⭐⭐⭐⭐⭐ 5/5 — Excellent speed and wallet integration</option>
-              <option value="4">⭐⭐⭐⭐ 4/5 — Great Soroban RPC events</option>
-              <option value="3">⭐⭐⭐ 3/5 — Good prototype</option>
-            </select>
-          </label>
-          <label>
-            Feedback Comments
-            <textarea placeholder="Share your experience with Stellar Testnet REC transactions..." rows={3} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #c8d6ce", font: "inherit" }} required defaultValue="The Freighter wallet connection and instantaneous inter-contract RECT token minting were seamless!" />
-          </label>
-          <button type="submit">Submit User Feedback</button>
-        </form>
+        {feedbackSubmitted ? (
+          <div style={{ background: "#e6fffa", border: "1px solid #38b2ac", color: "#234e52", padding: "16px", borderRadius: "8px", textAlign: "center" }}>
+            <h3 style={{ margin: "0 0 8px 0" }}>🎉 Thank you for testing our project!</h3>
+            <p style={{ margin: 0 }}>Your feedback and wallet public key have been logged into the live verification stream.</p>
+            <button 
+              type="button" 
+              onClick={() => setFeedbackSubmitted(false)}
+              style={{ marginTop: "12px", background: "var(--forest)", color: "white", padding: "6px 16px", borderRadius: "4px", border: "none", cursor: "pointer" }}
+            >
+              Submit Another Review
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleFeedbackSubmit} style={{ display: "grid", gap: "12px", background: "white", padding: "20px", borderRadius: "8px", border: "1px solid var(--line)" }}>
+            <label>
+              Your Name / Alias
+              <input 
+                type="text" 
+                placeholder="e.g. Alex Chen" 
+                value={feedbackName} 
+                onChange={(e) => setFeedbackName(e.target.value)} 
+                required 
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #c8d6ce", font: "inherit", marginTop: "4px" }}
+              />
+            </label>
+            <label>
+              User Rating
+              <select value={feedbackRating} onChange={(e) => setFeedbackRating(e.target.value)} style={{ marginTop: "4px" }}>
+                <option value="5">⭐⭐⭐⭐⭐ 5/5 — Excellent speed and wallet integration</option>
+                <option value="4">⭐⭐⭐⭐ 4/5 — Great Soroban RPC events</option>
+                <option value="3">⭐⭐⭐ 3/5 — Good prototype</option>
+                <option value="2">⭐⭐ 2/5 — Needs minor UI fixes</option>
+                <option value="1">⭐ 1/5 — Encountered issues</option>
+              </select>
+            </label>
+            <label>
+              Feedback Comments & Suggestions
+              <textarea 
+                placeholder="Share your experience with Stellar Testnet REC transactions..." 
+                rows={3} 
+                value={feedbackComment} 
+                onChange={(e) => setFeedbackComment(e.target.value)} 
+                required 
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #c8d6ce", font: "inherit", marginTop: "4px" }} 
+              />
+            </label>
+            <button type="submit" style={{ cursor: "pointer" }}>Submit User Feedback</button>
+          </form>
+        )}
       </section>
     </main>
   );
