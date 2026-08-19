@@ -30,14 +30,10 @@ jobs:
         run: npm test
 
       - name: Run Soroban Contract Unit Tests
-        run: |
-          cd contracts/soroban_rec
-          cargo test
+        run: cargo test --manifest-path contracts/soroban_rec/Cargo.toml
 
       - name: Build Soroban Contract WASM
-        run: |
-          cd contracts/soroban_rec
-          cargo build --target wasm32-unknown-unknown --release
+        run: cargo build --manifest-path contracts/soroban_rec/Cargo.toml --target wasm32-unknown-unknown --release
 
       - name: Deploy Smart Contract to Stellar Testnet (CD Step)
         run: |
