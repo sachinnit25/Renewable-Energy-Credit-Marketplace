@@ -1,4 +1,4 @@
-# Renewable Energy Credit Marketplace (Level 6 & Black Belt Production Edition)
+# Renewable Energy Credit Marketplace
 
 An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Mainnet & Testnet** and **Soroban Smart Contracts**, featuring **Gasless Fee Sponsorship (SEP Fee-Bump)**, inter-contract communication, real-time event streaming, security audit reports, community technical tutorials, verified 50+ user onboarding proof, pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
 
