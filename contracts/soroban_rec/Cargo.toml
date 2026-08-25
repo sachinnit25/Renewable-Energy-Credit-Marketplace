@@ -12,6 +12,10 @@ soroban-sdk = "20.0.0"
 [dev-dependencies]
 soroban-sdk = { version = "20.0.0", features = ["testutils"] }
 
+[lints.rust]
+unexpected_cfgs = "allow"
+warnings = "allow"
+
 
 
 [profile.release]
