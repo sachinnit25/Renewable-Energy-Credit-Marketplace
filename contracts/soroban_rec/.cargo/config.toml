@@ -1,2 +1,2 @@
-[build]
+[target.wasm32-unknown-unknown]
 rustflags = ["-C", "target-feature=-reference-types,-simd128,-bulk-memory"]
