@@ -21,7 +21,7 @@ jobs:
       - name: Setup Rust & WASM Target
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.77.2"
+          toolchain: stable
           targets: wasm32-unknown-unknown
 
       - name: Install Node Dependencies
@@ -33,13 +33,13 @@ jobs:
       - name: Run Soroban Contract Unit Tests
         working-directory: contracts/soroban_rec
         env:
-          RUSTFLAGS: "-A unexpected_cfgs"
+          RUSTFLAGS: "-A warnings -A unexpected_cfgs"
         run: cargo test
 
       - name: Build Soroban Contract WASM
         working-directory: contracts/soroban_rec
         env:
-          RUSTFLAGS: "-A unexpected_cfgs"
+          RUSTFLAGS: "-A warnings -A unexpected_cfgs"
         run: cargo build --target wasm32-unknown-unknown --release
 
       - name: Deploy Smart Contract to Stellar Testnet (CD Step)
