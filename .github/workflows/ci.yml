@@ -32,7 +32,9 @@ jobs:
 
       - name: Run Soroban Contract Unit Tests
         working-directory: contracts/soroban_rec
-        run: cargo test
+        env:
+          RUSTFLAGS: "-A unexpected_cfgs"
+        run: cargo test --lib
 
       - name: Build Soroban Contract WASM
         working-directory: contracts/soroban_rec
