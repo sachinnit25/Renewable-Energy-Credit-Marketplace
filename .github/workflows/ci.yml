@@ -33,13 +33,13 @@ jobs:
       - name: Run Soroban Contract Unit Tests
         working-directory: contracts/soroban_rec
         env:
-          RUSTFLAGS: "-A warnings -A unexpected_cfgs"
+          RUSTFLAGS: "--cfg soroban_sdk_internal_allow_unexpected_cfgs"
         run: cargo test
 
       - name: Build Soroban Contract WASM
         working-directory: contracts/soroban_rec
         env:
-          RUSTFLAGS: "-A warnings -A unexpected_cfgs"
+          RUSTFLAGS: "--cfg soroban_sdk_internal_allow_unexpected_cfgs"
         run: cargo build --target wasm32-unknown-unknown --release
 
       - name: Deploy Smart Contract to Stellar Testnet (CD Step)
