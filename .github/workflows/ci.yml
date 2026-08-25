@@ -34,7 +34,7 @@ jobs:
         working-directory: contracts/soroban_rec
         env:
           RUSTFLAGS: "-A unexpected_cfgs"
-        run: cargo test --lib
+        run: cargo test --lib --verbose
 
       - name: Build Soroban Contract WASM
         working-directory: contracts/soroban_rec
