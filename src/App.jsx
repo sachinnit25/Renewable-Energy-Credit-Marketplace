@@ -1196,6 +1196,17 @@ export default function App() {
                       : "⚡ All Types"}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className="filter-btn"
+                  style={{ background: "linear-gradient(135deg, var(--forest), var(--emerald))", color: "white", borderColor: "transparent" }}
+                  disabled={isSubmitting}
+                  onClick={(e) => {
+                    handleInvokeContract(e, "buy_rec", 101);
+                  }}
+                >
+                  🛒 Buy All 4 RECs Bundle (4.4 XLM)
+                </button>
               </div>
             </div>
           </div>
