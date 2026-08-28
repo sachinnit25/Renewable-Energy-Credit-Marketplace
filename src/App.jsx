@@ -3,9 +3,11 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import * as FreighterApiModule from "@stellar/freighter-api";
 import contractInfo from "../contract-info.json";
 import {
+  calculateSellerReputation,
   categorizeError,
   defaultPriceStroops,
   formatContractEvent,
+  formatEscrowStatus,
   recSourceForId,
 } from "../lib/soroban-helpers.js";
 import {
@@ -111,6 +113,43 @@ export default function App() {
   // Net Zero ESG Simulator State
   const [esgUsageMwh, setEsgUsageMwh] = useState(120);
   const [esgTarget, setEsgTarget] = useState(100);
+
+  // Soroban Escrow & Seller Reputation State Machine
+  const escrowStepKeys = ["LISTED", "OFFER_MADE", "ACCEPTED", "LOCKED", "DELIVERED", "CONFIRMED", "RELEASED"];
+  const [escrowStepIndex, setEscrowStepIndex] = useState(3); // Default at Step 4: LOCKED
+  const [sellerStats, setSellerStats] = useState({ successfulTrades: 18, totalTrades: 18 });
+
+  const currentEscrowState = escrowStepKeys[escrowStepIndex] || "LISTED";
+  const sellerRep = calculateSellerReputation(sellerStats.successfulTrades, sellerStats.totalTrades);
+
+  const advanceEscrowState = () => {
+    if (escrowStepIndex < escrowStepKeys.length - 1) {
+      const nextIdx = escrowStepIndex + 1;
+      setEscrowStepIndex(nextIdx);
+      const nextKey = escrowStepKeys[nextIdx];
+      
+      if (nextKey === "RELEASED") {
+        setSellerStats((prev) => ({
+          successfulTrades: prev.successfulTrades + 1,
+          totalTrades: prev.totalTrades + 1,
+        }));
+        addLog("contract", "💸 Soroban Smart Contract automatically released locked XLM to Seller! Seller Reputation +1 ⭐");
+        addToast("Payment Released & Seller Reputation Boosted!", "success");
+      } else if (nextKey === "LOCKED") {
+        addLog("contract", "💰 1.0 XLM locked in Soroban Escrow Smart Contract Vault.");
+        addToast("Payment locked safely in Soroban Escrow!", "info");
+      } else {
+        addLog("contract", `Escrow State Advanced -> ${nextKey}`);
+        addToast(`Escrow status updated: ${nextKey}`, "info");
+      }
+    }
+  };
+
+  const resetEscrowState = () => {
+    setEscrowStepIndex(0);
+    addLog("system", "Soroban Escrow lifecycle reset to Step 1 (LISTED).");
+    addToast("Escrow state reset", "info");
+  };
 
   // Feedback & Execution state
   const [txFeedback, setTxFeedback] = useState({
@@ -957,10 +996,10 @@ export default function App() {
 
           <ul className="nav-links">
             <li><a href="#marketplace">Marketplace</a></li>
+            <li><a href="#escrow">Soroban Escrow</a></li>
             <li><a href="#simulator">ESG Net-Zero Tool</a></li>
             <li><a href="#contract-hub">Soroban Hub</a></li>
             <li><a href="#telemetry">Live Telemetry</a></li>
-            <li><a href="#onboarding">Verified Users</a></li>
             <li><a href="#feedback">Feedback</a></li>
           </ul>
 
@@ -1008,9 +1047,9 @@ export default function App() {
                   Explore REC Marketplace ➔
                 </button>
               </a>
-              <a href="#simulator">
+              <a href="#escrow">
                 <button type="button" className="btn-lg secondary">
-                  Net-Zero ESG Tool 🧮
+                  Soroban Escrow Hub 🔒
                 </button>
               </a>
             </div>
@@ -1180,6 +1219,124 @@ export default function App() {
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        {/* Soroban P2P / B2B Escrow & Seller Reputation Lifecycle Hub */}
+        <section id="escrow" className="panel" style={{ marginBottom: "40px" }}>
+          <div className="panel-heading">
+            <div>
+              <h2>Soroban Smart Contract Escrow & Seller Reputation Lifecycle</h2>
+              <p className="panel-subtitle">Multi-step trustless escrow locking, delivery confirmation, auto-release & rating scoring</p>
+            </div>
+            <span className="badge warning">🔒 Live Escrow Vault</span>
+          </div>
+
+          {/* Seller Reputation Banner Widget */}
+          <div className="seller-rep-box">
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ fontSize: "2rem" }}>⭐</div>
+              <div>
+                <strong style={{ fontSize: "1.1rem", color: "#92400e" }}>Seller Trust & Reputation Score</strong>
+                <div style={{ fontSize: "0.85rem", color: "#b45309" }}>
+                  {sellerStats.successfulTrades} / {sellerStats.totalTrades} Successful Escrow Settlements ({sellerRep.percent}% Positive)
+                </div>
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "1.6rem", fontWeight: "850", color: "#92400e" }}>{sellerRep.stars} / 5.0</div>
+              <span className="badge success">{sellerRep.level}</span>
+            </div>
+          </div>
+
+          {/* 7-Step Interactive Escrow Stepper Visualizer */}
+          <div className="escrow-stepper">
+            {[
+              { num: "Step 1", title: "List Product", icon: "📦" },
+              { num: "Step 2", title: "Offer Made", icon: "🤝" },
+              { num: "Step 3", title: "Accepted", icon: "✓" },
+              { num: "Step 4", title: "💰 Lock Escrow", icon: "🔒" },
+              { num: "Step 5", title: "Delivered", icon: "🚚" },
+              { num: "Step 6", title: "Confirmed", icon: "✅" },
+              { num: "Step 7", title: "💸 Released + ⭐", icon: "🎉" },
+            ].map((st, idx) => (
+              <div
+                key={idx}
+                className={`escrow-step ${
+                  escrowStepIndex === idx ? "active" : escrowStepIndex > idx ? "completed" : ""
+                }`}
+              >
+                <div className="escrow-step-num">{st.num}</div>
+                <div style={{ fontSize: "1.2rem", margin: "2px 0" }}>{st.icon}</div>
+                <div className="escrow-step-title">{st.title}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Live Escrow Contract Card */}
+          <div style={{ background: "#f8faf9", border: "1px solid var(--line)", padding: "20px", borderRadius: "12px", margin: "20px 0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div>
+                <strong>Active Escrow ID:</strong> <span style={{ fontFamily: "monospace" }}>ESC-2026-STLR-8801</span>
+              </div>
+              <span className={`badge ${formatEscrowStatus(currentEscrowState).badge}`}>
+                {formatEscrowStatus(currentEscrowState).icon} {formatEscrowStatus(currentEscrowState).label}
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
+              <div>
+                <span style={{ color: "var(--muted)" }}>Locked XLM Amount:</span>
+                <div style={{ fontWeight: "850", fontSize: "1.2rem", color: "var(--forest)" }}>1.0 XLM</div>
+              </div>
+              <div>
+                <span style={{ color: "var(--muted)" }}>Buyer Key:</span>
+                <div style={{ fontFamily: "monospace" }}>{publicKey ? `${publicKey.slice(0, 8)}...` : "GB6R...VUEZ5P"}</div>
+              </div>
+              <div>
+                <span style={{ color: "var(--muted)" }}>Seller Key:</span>
+                <div style={{ fontFamily: "monospace" }}>GB6PSX...BMPTIH</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stepper Control Buttons */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn-lg"
+              disabled={escrowStepIndex >= escrowStepKeys.length - 1}
+              onClick={advanceEscrowState}
+            >
+              {escrowStepIndex >= escrowStepKeys.length - 1
+                ? "Lifecycle Complete ✓ (Certificate Issued)"
+                : `Advance Step (${escrowStepIndex + 1}/7: ${formatEscrowStatus(escrowStepKeys[escrowStepIndex + 1] || "").label}) ➔`}
+            </button>
+            
+            {escrowStepIndex === escrowStepKeys.length - 1 && (
+              <button
+                type="button"
+                className="btn-lg secondary"
+                onClick={() => {
+                  setSelectedCertModal({
+                    rec: recListings[0],
+                    mwh: 50,
+                    txHash: "escrow-settled-485067ac1009b8838888b54d",
+                    buyer: publicKey || "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P",
+                  });
+                }}
+              >
+                📜 View Generated Ownership Certificate
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="ghost"
+              onClick={resetEscrowState}
+            >
+              🔄 Reset Lifecycle Demo
+            </button>
           </div>
         </section>
 

@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  calculateSellerReputation,
   categorizeError,
   defaultPriceStroops,
   formatContractEvent,
+  formatEscrowStatus,
   formatXlmBalance,
   recSourceForId,
   validatePaymentInput,
@@ -47,4 +49,17 @@ test("formatContractEvent renders Soroban RPC event payloads", () => {
   });
   assert.match(text, /rec/);
   assert.match(text, /12345/);
+});
+
+test("calculateSellerReputation calculates percentage and star rating", () => {
+  const rep = calculateSellerReputation(48, 50);
+  assert.equal(rep.percent, 96);
+  assert.equal(rep.stars, "4.8");
+  assert.equal(rep.level, "Verified Top Seller");
+});
+
+test("formatEscrowStatus formats state label and badge", () => {
+  const status = formatEscrowStatus("LOCKED");
+  assert.equal(status.badge, "warning");
+  assert.match(status.label, /Locked/);
 });
