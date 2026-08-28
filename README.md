@@ -29,53 +29,19 @@ flowchart TD
 
   # ⚡ How REC Marketplace Works
 
-The following workflow demonstrates how Renewable Energy Credits are created, purchased, rewarded, and recorded on the Stellar blockchain.
-                                                               ┌──────────────────────────────┐
-                                                               │ 🌱 Renewable Energy Producer │
-                                                               └──────────────┬───────────────┘
-                                                                              │
-                                                                              ▼ 
-                                                               ┌──────────────────────────────┐
-                                                               │ ⚡ Create Renewable Energy   │
-                                                               │           Credit             │
-                                                               └──────────────┬───────────────┘
-                                                                              │             
-                                                                              ▼
-                                                               ┌──────────────────────────────┐
-                                                               │ 🏪 REC Marketplace Smart     │
-                                                               │          Contract            │
-                                                               └──────────────┬───────────────┘
-                                                                              │
-                                                                              ▼
-                                                               ┌──────────────────────────────┐
-                                                               │ 🛒 Buyer Purchases REC       │
-                                                               └──────────┬───────────┬───────┘
-                                                                          │           │
-                                                                          │           └──────────────────────┐
-                                                                          ▼                                  ▼
-                                                                ┌──────────────────────┐       ┌──────────────────────────┐
-                                                                │ ⛽ Gasless Fee       │      │ 🔗 Soroban Inter-Contract│
-                                                                │    Sponsorship        │      │      Communication       │
-                                                                └──────────┬───────────┘       └─────────────┬────────────┘
-           │                                 │
-           │                                 ▼
-           │                    ┌──────────────────────────┐
-           │                    │ 🪙 RECT Reward Token      │
-           │                    │        Contract          │
-           │                    └─────────────┬────────────┘
-           │                                  │
-           │                                  ▼
-           │                    ┌──────────────────────────┐
-           │                    │ 🎁 Mint 10 RECT Tokens    │
-           │                    └─────────────┬────────────┘
-           │                                  │
-           └───────────────┬──────────────────┘
-                           ▼
-              ┌──────────────────────────────┐
-              │ 📜 Transparent On-Chain      │
-              │      Transaction Record      │
-              └──────────────────────────────┘
+    A[🌱 Renewable Energy Producer] --> B[⚡ Create REC On-Chain]
 
+    B --> C[🏪 REC Marketplace Contract]
+
+    C --> D[🛒 Buyer Purchase]
+
+    D --> E[⛽ Gasless Fee Sponsorship]
+
+    D --> F[🔗 Soroban Inter-Contract Call]
+
+    F --> G[🪙 Mint 10 RECT Reward Tokens]
+
+    G --> H[📜 Transparent On-Chain Record]
 
 
 
