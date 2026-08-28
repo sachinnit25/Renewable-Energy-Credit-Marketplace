@@ -103,6 +103,15 @@ export default function App() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Interactive Features State
+  const [selectedRecModal, setSelectedRecModal] = useState(null); // Active REC for Impact Calculator Modal
+  const [calcMwh, setCalcMwh] = useState(50);
+  const [selectedCertModal, setSelectedCertModal] = useState(null); // Active Digital Certificate Modal
+  
+  // Net Zero ESG Simulator State
+  const [esgUsageMwh, setEsgUsageMwh] = useState(120);
+  const [esgTarget, setEsgTarget] = useState(100);
+
   // Feedback & Execution state
   const [txFeedback, setTxFeedback] = useState({
     message: "Connect wallet to begin transaction or contract invocation.",
@@ -110,7 +119,7 @@ export default function App() {
     htmlUrl: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [txStep, setTxStep] = useState(0); // 0: idle, 1: building/simulating, 2: signing, 3: submitting, 4: confirmed
+  const [txStep, setTxStep] = useState(0);
 
   // Product Feedback Form State
   const [feedbackName, setFeedbackName] = useState("");
@@ -159,6 +168,7 @@ export default function App() {
 
   // Event Stream & Terminal State
   const [eventFilter, setEventFilter] = useState("all");
+  const [isStreamPaused, setIsStreamPaused] = useState(false);
   const [events, setEvents] = useState([
     {
       id: "sys-init",
@@ -173,11 +183,24 @@ export default function App() {
   const pollTimerRef = useRef(null);
 
   const addLog = (type, text) => {
+    if (isStreamPaused) return;
     const time = new Date().toLocaleTimeString();
     setEvents((prev) => [
       { id: Math.random().toString(36).substring(2), type, time, text },
       ...prev,
     ]);
+  };
+
+  // Export logs helper
+  const exportTelemetryLogsJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(events, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `soroban-telemetry-logs-${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addToast("Exported telemetry logs to JSON!", "success");
   };
 
   const handleCategorizedError = (error, context = "") => {
@@ -272,7 +295,7 @@ export default function App() {
 
   // Poll Events
   const pollContractEventsOnce = async () => {
-    if (!contractId) return;
+    if (!contractId || isStreamPaused) return;
     try {
       const { events: fetchedEvents, nextStartLedger } =
         await fetchContractEvents({
@@ -665,7 +688,9 @@ export default function App() {
       location: "Bhadla, Rajasthan",
       desc: "1 MWh utility-scale solar generation certified by Soroban smart contract.",
       type: "solar",
-      mwh: 50,
+      baseMwh: 50,
+      baseXlm: 1.0,
+      baseUsd: 0.12,
       price: "1.0 XLM",
       usdEst: "$0.12 USD",
     },
@@ -675,7 +700,9 @@ export default function App() {
       location: "Kutch, Gujarat",
       desc: "High-efficiency coastal wind power production verified on-chain.",
       type: "wind",
-      mwh: 80,
+      baseMwh: 80,
+      baseXlm: 1.4,
+      baseUsd: 0.17,
       price: "1.4 XLM",
       usdEst: "$0.17 USD",
     },
@@ -685,7 +712,9 @@ export default function App() {
       location: "Himachal Pradesh",
       desc: "Zero-emission community hydroelectric power generation.",
       type: "hydro",
-      mwh: 35,
+      baseMwh: 35,
+      baseXlm: 0.8,
+      baseUsd: 0.10,
       price: "0.8 XLM",
       usdEst: "$0.10 USD",
     },
@@ -695,7 +724,9 @@ export default function App() {
       location: "Ludhiana, Punjab",
       desc: "Sustainable crop-residue bioenergy converting waste to clean power.",
       type: "biomass",
-      mwh: 60,
+      baseMwh: 60,
+      baseXlm: 1.2,
+      baseUsd: 0.14,
       price: "1.2 XLM",
       usdEst: "$0.14 USD",
     },
@@ -730,6 +761,182 @@ export default function App() {
         ))}
       </div>
 
+      {/* Interactive REC Details & Impact Calculator Modal */}
+      {selectedRecModal && (
+        <div className="modal-backdrop" onClick={() => setSelectedRecModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setSelectedRecModal(null)}
+            >
+              ✕
+            </button>
+
+            <div className="credit-card-top" style={{ marginBottom: "8px" }}>
+              <span className={`source-tag ${selectedRecModal.type}`}>
+                {selectedRecModal.type.toUpperCase()}
+              </span>
+              <span className="verified-pill">✓ Soroban Verified</span>
+            </div>
+
+            <h2 style={{ fontSize: "1.5rem", marginBottom: "8px" }}>{selectedRecModal.title}</h2>
+            <p style={{ color: "var(--muted)", marginBottom: "16px" }}>📍 {selectedRecModal.location} | Serial #REC-{selectedRecModal.id}-2026</p>
+
+            <div className="calculator-box">
+              <div className="slider-container">
+                <div className="slider-header">
+                  <span>Select Desired Energy Volume (MWh):</span>
+                  <span className="slider-value-pill">{calcMwh} MWh</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="500"
+                  value={calcMwh}
+                  onChange={(e) => setCalcMwh(Number(e.target.value))}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", padding: "12px", background: "white", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
+                <div>
+                  <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Calculated Price (XLM):</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: "850", color: "var(--forest)" }}>
+                    {((selectedRecModal.baseXlm * calcMwh) / selectedRecModal.baseMwh).toFixed(2)} XLM
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>USD Estimate:</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: "850", color: "var(--ink)" }}>
+                    ${((selectedRecModal.baseUsd * calcMwh) / selectedRecModal.baseMwh).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              <h4 style={{ fontSize: "0.92rem", marginBottom: "12px" }}>🌿 Calculated Real-World Environmental Impact:</h4>
+
+              <div className="impact-grid">
+                <div className="impact-item">
+                  <div className="impact-item-icon">🌲</div>
+                  <div>
+                    <div className="impact-item-val">{Math.round(calcMwh * 16)}</div>
+                    <div className="impact-item-lbl">Trees Planted Equiv.</div>
+                  </div>
+                </div>
+
+                <div className="impact-item">
+                  <div className="impact-item-icon">🚗</div>
+                  <div>
+                    <div className="impact-item-val">{(calcMwh * 0.22).toFixed(1)}</div>
+                    <div className="impact-item-lbl">Cars Taken Off Road</div>
+                  </div>
+                </div>
+
+                <div className="impact-item">
+                  <div className="impact-item-icon">🏠</div>
+                  <div>
+                    <div className="impact-item-val">{Math.round(calcMwh * 1.1)}</div>
+                    <div className="impact-item-lbl">Homes Powered / Mo.</div>
+                  </div>
+                </div>
+
+                <div className="impact-item">
+                  <div className="impact-item-icon">☁️</div>
+                  <div>
+                    <div className="impact-item-val">{(calcMwh * 0.85).toFixed(1)} t</div>
+                    <div className="impact-item-lbl">CO₂ Emissions Offset</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <button
+                type="button"
+                className="btn-lg"
+                disabled={purchasedRecs[selectedRecModal.id] || isSubmitting}
+                onClick={(e) => {
+                  setSelectedRecModal(null);
+                  setRecId(String(selectedRecModal.id));
+                  setRecMwh(String(calcMwh));
+                  setContractMethod("buy_rec");
+                  setActiveTab("contract");
+                  handleInvokeContract(e, "buy_rec", selectedRecModal.id);
+                }}
+              >
+                {purchasedRecs[selectedRecModal.id] ? "Purchased ✓" : `Execute On-Chain Purchase`}
+              </button>
+              <button
+                type="button"
+                className="btn-lg secondary"
+                onClick={() => {
+                  setSelectedCertModal({
+                    rec: selectedRecModal,
+                    mwh: calcMwh,
+                    txHash: "485067ac1009b8838888b54dabcb6a79a9e65e4032a4206ce94dfe1ba1eb364c",
+                    buyer: publicKey || "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P",
+                  });
+                  setSelectedRecModal(null);
+                }}
+              >
+                Preview Digital Certificate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Digital REC Certificate Modal */}
+      {selectedCertModal && (
+        <div className="modal-backdrop" onClick={() => setSelectedCertModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setSelectedCertModal(null)}
+            >
+              ✕
+            </button>
+
+            <div className="certificate-frame">
+              <div className="certificate-header">OFFICIAL ON-CHAIN VERIFICATION CERTIFICATE</div>
+              <div className="certificate-title">Clean Energy Credit</div>
+              <div className="certificate-body">
+                This certifies that <strong>{selectedCertModal.mwh} MWh</strong> of certified <strong>{selectedCertModal.rec.type.toUpperCase()}</strong> power generated at <strong>{selectedCertModal.rec.location}</strong> has been retired on Stellar Soroban Smart Contract.
+              </div>
+
+              <div className="certificate-stamp">
+                <span>🛡️ Verified On-Chain</span>
+                <span>Serial #{selectedCertModal.rec.id}-2026-STLR</span>
+              </div>
+
+              <div style={{ marginTop: "16px", fontSize: "0.76rem", fontFamily: "monospace", color: "#92400e", wordBreak: "break-all" }}>
+                Buyer: {selectedCertModal.buyer}<br />
+                Tx Hash: {selectedCertModal.txHash.slice(0, 24)}...
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  window.print();
+                }}
+              >
+                🖨️ Print / Export Certificate
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setSelectedCertModal(null)}
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Glass Navigation Header */}
       <header className="top-nav">
         <div className="top-nav-inner">
@@ -743,6 +950,7 @@ export default function App() {
 
           <ul className="nav-links">
             <li><a href="#marketplace">Marketplace</a></li>
+            <li><a href="#simulator">ESG Net-Zero Tool</a></li>
             <li><a href="#contract-hub">Soroban Hub</a></li>
             <li><a href="#telemetry">Live Telemetry</a></li>
             <li><a href="#onboarding">Verified Users</a></li>
@@ -793,9 +1001,9 @@ export default function App() {
                   Explore REC Marketplace ➔
                 </button>
               </a>
-              <a href="#contract-hub">
+              <a href="#simulator">
                 <button type="button" className="btn-lg secondary">
-                  Soroban Contract Hub
+                  Net-Zero ESG Tool 🧮
                 </button>
               </a>
             </div>
@@ -918,7 +1126,7 @@ export default function App() {
                     </div>
                     <div className="rec-spec-item">
                       <span>Capacity</span>
-                      <strong>⚡ {item.mwh} MWh</strong>
+                      <strong>⚡ {item.baseMwh} MWh</strong>
                     </div>
                   </div>
                 </div>
@@ -929,25 +1137,118 @@ export default function App() {
                     <span className="price-sub">Est. {item.usdEst}</span>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={purchasedRecs[item.id] || isSubmitting}
-                    onClick={(e) => {
-                      setRecId(String(item.id));
-                      setContractMethod("buy_rec");
-                      setActiveTab("contract");
-                      handleInvokeContract(e, "buy_rec", item.id);
-                    }}
-                  >
-                    {purchasedRecs[item.id]
-                      ? "Purchased ✓"
-                      : isSubmitting && recId === String(item.id)
-                      ? "Buying..."
-                      : `Buy REC #${item.id}`}
-                  </button>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <button
+                      type="button"
+                      className="ghost"
+                      style={{ minHeight: "34px", padding: "0 10px", fontSize: "0.8rem" }}
+                      onClick={() => {
+                        setSelectedRecModal(item);
+                        setCalcMwh(item.baseMwh);
+                      }}
+                    >
+                      🧮 Calculate
+                    </button>
+                    <button
+                      type="button"
+                      disabled={purchasedRecs[item.id] || isSubmitting}
+                      onClick={(e) => {
+                        setRecId(String(item.id));
+                        setContractMethod("buy_rec");
+                        setActiveTab("contract");
+                        handleInvokeContract(e, "buy_rec", item.id);
+                      }}
+                    >
+                      {purchasedRecs[item.id]
+                        ? "Purchased ✓"
+                        : isSubmitting && recId === String(item.id)
+                        ? "Buying..."
+                        : `Buy REC`}
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        {/* Corporate Net-Zero ESG Carbon Offset Simulator */}
+        <section id="simulator" className="esg-card">
+          <div style={{ maxWidth: "700px" }}>
+            <span className="badge warning" style={{ marginBottom: "12px" }}>Interactive Tool</span>
+            <h2 style={{ fontSize: "1.8rem", color: "white", marginBottom: "8px" }}>
+              Corporate Net-Zero ESG Offset Simulator
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem", marginBottom: "20px" }}>
+              Calculate your corporate or personal monthly electricity consumption and automatically structure an optimal Soroban clean energy REC bundle to achieve your Net Zero target.
+            </p>
+
+            <div className="slider-container" style={{ background: "rgba(255,255,255,0.08)", padding: "16px", borderRadius: "12px" }}>
+              <div className="slider-header">
+                <span style={{ color: "white" }}>Monthly Electricity Usage (MWh):</span>
+                <span className="slider-value-pill" style={{ background: "var(--emerald)" }}>{esgUsageMwh} MWh</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="1000"
+                step="10"
+                value={esgUsageMwh}
+                onChange={(e) => setEsgUsageMwh(Number(e.target.value))}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: "0.88rem", fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>Select Net-Zero Target Offset:</label>
+              <div className="esg-targets">
+                {[25, 50, 75, 100].map((tgt) => (
+                  <button
+                    key={tgt}
+                    type="button"
+                    className={`esg-target-btn ${esgTarget === tgt ? "active" : ""}`}
+                    onClick={() => setEsgTarget(tgt)}
+                  >
+                    {tgt}% Net Zero
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: "24px", padding: "18px", background: "rgba(255,255,255,0.08)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.15)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <div>
+                  <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>Required Offset Volume:</div>
+                  <div style={{ fontSize: "1.4rem", fontWeight: "850", color: "var(--mint)" }}>
+                    {Math.round(esgUsageMwh * (esgTarget / 100))} MWh RECs
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>Est. Total XLM Cost:</div>
+                  <div style={{ fontSize: "1.4rem", fontWeight: "850", color: "#67e8f9" }}>
+                    {(esgUsageMwh * (esgTarget / 100) * 0.02).toFixed(2)} XLM
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ fontSize: "0.84rem", color: "rgba(255,255,255,0.8)" }}>
+                <strong>Recommended Portfolio Breakdown:</strong> 60% Rajasthan Solar (Lot #101) + 40% Gujarat Wind (Lot #102)
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-lg"
+              style={{ marginTop: "20px", background: "var(--emerald)" }}
+              onClick={(e) => {
+                const reqMwh = Math.round(esgUsageMwh * (esgTarget / 100));
+                setRecId("101");
+                setRecMwh(String(reqMwh));
+                setActiveTab("contract");
+                handleInvokeContract(e, "buy_rec", 101);
+              }}
+            >
+              🚀 Purchase Corporate Net-Zero Bundle ({Math.round(esgUsageMwh * (esgTarget / 100))} MWh)
+            </button>
           </div>
         </section>
 
@@ -1319,6 +1620,20 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsStreamPaused(!isStreamPaused)}
+                  style={{ minHeight: "26px", padding: "0 8px", fontSize: "0.72rem", background: isStreamPaused ? "#f59e0b" : "rgba(255,255,255,0.1)", color: "white", border: "none" }}
+                >
+                  {isStreamPaused ? "▶️ Resume" : "⏸️ Pause"}
+                </button>
+                <button
+                  type="button"
+                  onClick={exportTelemetryLogsJSON}
+                  style={{ minHeight: "26px", padding: "0 8px", fontSize: "0.72rem", background: "rgba(255,255,255,0.1)", color: "white", border: "none" }}
+                >
+                  📥 Export JSON
+                </button>
                 <button
                   type="button"
                   onClick={() => setEvents([])}

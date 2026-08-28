@@ -1053,6 +1053,247 @@ tr:hover td {
   }
 }
 
+/* Interactive Feature Styles */
+
+/* Modal Backdrop & Popup Container */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(9, 18, 14, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modal-content {
+  background: white;
+  width: min(680px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  min-height: auto;
+  padding: 0;
+}
+.modal-close-btn:hover {
+  background: #e2e8f0;
+  color: var(--ink);
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Impact Calculator Slider */
+.calculator-box {
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 750;
+  font-size: 0.95rem;
+}
+
+.slider-value-pill {
+  background: var(--forest);
+  color: white;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+}
+
+input[type="range"] {
+  accent-color: var(--emerald);
+  height: 8px;
+  border-radius: 4px;
+  background: #cbd5e1;
+  cursor: pointer;
+}
+
+/* Impact 4-Grid Cards */
+.impact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.impact-item {
+  background: white;
+  border: 1px solid #bbf7d0;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.impact-item-icon {
+  font-size: 1.6rem;
+  width: 40px;
+  height: 40px;
+  background: #dcfce7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.impact-item-val {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--forest);
+  line-height: 1.1;
+}
+
+.impact-item-lbl {
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ESG Simulator Card */
+.esg-card {
+  background: linear-gradient(135deg, #091a13 0%, #0d291e 100%);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 40px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.esg-card::before {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.esg-targets {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.esg-target-btn {
+  flex: 1;
+  min-height: 42px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.esg-target-btn.active {
+  background: var(--emerald);
+  color: white;
+  border-color: var(--emerald);
+}
+
+/* Digital Certificate Card */
+.certificate-frame {
+  background: linear-gradient(135deg, #fffdfa 0%, #fefce8 100%);
+  border: 3px double #d97706;
+  border-radius: var(--radius-md);
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.15);
+  position: relative;
+  color: #78350f;
+  margin: 16px 0;
+}
+
+.certificate-header {
+  font-size: 0.82rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #b45309;
+  margin-bottom: 8px;
+}
+
+.certificate-title {
+  font-size: 1.6rem;
+  font-weight: 850;
+  color: #92400e;
+  font-family: 'Times New Roman', Georgia, serif;
+  margin-bottom: 16px;
+}
+
+.certificate-body {
+  font-size: 0.95rem;
+  color: #451a03;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.certificate-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: #fef3c7;
+  border: 1px dashed #d97706;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #92400e;
+}
+
 /* Responsive Media Queries */
 @media (max-width: 1024px) {
   .hero {
@@ -1086,4 +1327,8 @@ tr:hover td {
   .credit-grid {
     grid-template-columns: 1fr;
   }
+  .impact-grid {
+    grid-template-columns: 1fr;
+  }
 }
+
