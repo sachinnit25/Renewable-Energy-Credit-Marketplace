@@ -82,7 +82,7 @@ sequenceDiagram
   actor Buyer as Corporate Buyer
   participant Soroban as Soroban Smart Contract
   participant Vault as Escrow Vault
-  participant RECT as RECT Reward Token
+  participant RewardToken as RECT Reward Token
 
   Seller->>Soroban: 1. create_rec(id=101, mwh=50, price=1.0 XLM, source=solar)
   Soroban->>Vault: Store REC Lot #101 (Status: LISTED)
@@ -103,7 +103,7 @@ sequenceDiagram
   Soroban->>Vault: Update Status: CONFIRMED
   
   Soroban->>Seller: 7. Auto-Release Locked XLM Funds to Seller
-  Soroban->>RECT: 8. Inter-Contract Mint 10 RECT Reward Tokens to Buyer
+  Soroban->>RewardToken: 8. Inter-Contract Mint 10 RECT Reward Tokens to Buyer
   Soroban->>Vault: 9. Update Seller Reputation (+1 Trade) & Generate Certificate
 ```
 
