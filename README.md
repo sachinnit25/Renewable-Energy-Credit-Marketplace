@@ -10,6 +10,7 @@ The transition toward renewable energy requires a transparent and trustworthy sy
 Traditional credit marketplaces can face challenges such as:
 
 ❌ Limited transparency                                                                                                                                                                                                       
+
 ❌ Complex intermediaries
 
 ❌ High transaction friction
