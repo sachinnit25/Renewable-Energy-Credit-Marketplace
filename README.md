@@ -1,4 +1,4 @@
-#🌱 Renewable Energy Credit Marketplace
+## 🌱 **RENEWABLE ENERGY CREDIT MARKETPLACE**
 
 An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Mainnet & Testnet** and **Soroban Smart Contracts**, featuring **Gasless Fee Sponsorship (SEP Fee-Bump)**, inter-contract communication, real-time event streaming, security audit reports, community technical tutorials, verified 50+ user onboarding proof, pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
 
@@ -165,8 +165,7 @@ flowchart LR
   Events -->|getEvents| RPC
   MP -->|inter-contract mint| RT
 ```
-
-### Smart Contracts (`contracts/soroban_rec/src/lib.rs`)
+🚀 Contract Deployment (`contracts/soroban_rec/src/lib.rs`)
 
 | Contract | Methods |
 |---|---|
@@ -204,7 +203,7 @@ npm run test:contracts   # 5 Soroban contract tests
 npm run test:all         # both suites
 ```
 
-### Build & Deploy Contract
+### 🚀 Smart Contract Deployment
 
 ```bash
 cd contracts/soroban_rec
@@ -214,7 +213,7 @@ npm run deploy:contract   # deploys reward + marketplace, initializes, writes co
 npm run interact:contract # optional: create_rec on-chain and update interactionTxHash
 ```
 
-### Capture Submission Screenshots
+###📸 Capture Project Screenshots
 
 ```bash
 npm install -D playwright
@@ -236,7 +235,7 @@ Outputs: `screens/mobile.png`, `screens/ci.png`, `screens/tests.png`
 
 ---
 
-## CI/CD Pipeline
+##🔄 CI/CD Pipeline
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR to `main`/`master`:
 
@@ -258,7 +257,7 @@ Ensure Freighter network is **Stellar Testnet** (`Test SDF Network ; September 2
 
 ---
 
-## Project Structure
+##📂 Project Structure
 
 ```
 ├── contracts/soroban_rec/   # Soroban Rust smart contracts + tests
@@ -274,6 +273,9 @@ Ensure Freighter network is **Stellar Testnet** (`Test SDF Network ; September 2
 
 ---
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](./LICENSE).
+
+🌱 Build for Sustainability. Powered by Stellar.
+⭐ If you like this project, consider giving the repository a star!
