@@ -708,6 +708,60 @@ export default function App() {
       await pollContractEventsOnce();
       await fetchBalance();
     } catch (error) {
+      const errStr = error?.message || String(error);
+      if (
+        method === "buy_rec" &&
+        (errStr.includes("MissingValue") || errStr.includes("non-existing value"))
+      ) {
+        addLog(
+          "system",
+          `REC Lot #${targetRecId} not yet created on contract storage. Auto-minting REC #${targetRecId} on-chain first...`
+        );
+        addToast(`Auto-minting REC #${targetRecId} on Soroban before purchase...`, "info");
+        try {
+          const createArgs = buildMethodArgs("create_rec", targetRecId, targetMwh);
+          await invokeContractCall({
+            SDK,
+            rpcServer: sorobanRpc,
+            contractId,
+            method: "create_rec",
+            scValArgs: createArgs,
+            publicKey,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            signTransaction: signPreparedTransaction,
+          });
+
+          addLog("contract", `REC Lot #${targetRecId} created on-chain! Executing buy_rec...`);
+          setTxStep(3);
+          const { hash } = await invokeContractCall({
+            SDK,
+            rpcServer: sorobanRpc,
+            contractId,
+            method: "buy_rec",
+            scValArgs,
+            publicKey,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            signTransaction: signPreparedTransaction,
+          });
+
+          setTxStep(4);
+          setTxFeedback({
+            message: `✅ Soroban contract call confirmed! REC #${targetRecId} minted & purchased! Hash: ${hash}`,
+            type: "success",
+            htmlUrl: `${EXPLORER_TX}${hash}`,
+          });
+          addLog("contract", `buy_rec confirmed on-chain for REC #${targetRecId}. Hash: ${hash}`);
+          addToast(`Purchased REC #${targetRecId} on-chain!`, "success");
+          setPurchasedRecs((prev) => ({ ...prev, [targetRecId]: true }));
+          await refreshOnChainRecCount();
+          await pollContractEventsOnce();
+          await fetchBalance();
+          return;
+        } catch (autoErr) {
+          handleCategorizedError(autoErr, "Auto-minting REC Failed");
+        }
+      }
+
       setTxStep(0);
       handleCategorizedError(error, "Soroban Contract Call Failed");
       setTxFeedback({
