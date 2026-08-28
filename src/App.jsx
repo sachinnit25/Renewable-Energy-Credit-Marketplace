@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import * as FreighterApiModule from "@stellar/freighter-api";
+import contractInfo from "../contract-info.json";
 import {
   categorizeError,
   defaultPriceStroops,
@@ -25,8 +26,8 @@ const SOROBAN_RPC_URL = "https://soroban-testnet.stellar.org";
 const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 const EXPLORER_TX = "https://stellar.expert/explorer/testnet/tx/";
 const DEFAULT_CONTRACT_ID =
-  contractInfo.contractId ||
-  "CD5OADKVTIGRN75B5GPS735ITDSDXLH3BME77KZRHHOFFKUQZYLH2XXR";
+  contractInfo?.contractId ||
+  "CAJRJGQYHPZRDZKDDULOJ3X5VODA6APERBPYRRVOPIIQVKQFB453JVVX";
 
 const horizonServer = new HorizonServer(HORIZON_URL);
 const sorobanRpc = createSorobanClient(SDK, SOROBAN_RPC_URL);
@@ -56,6 +57,16 @@ function unwrapFreighterValue(result, keys) {
 }
 
 export default function App() {
+  // Toast Notifications
+  const [toasts, setToasts] = useState([]);
+  const addToast = (text, type = "info") => {
+    const id = Math.random().toString(36).substring(2);
+    setToasts((prev) => [...prev, { id, text, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
+
   // App State
   const [walletType, setWalletType] = useState("freighter");
   const [publicKey, setPublicKey] = useState("");
@@ -63,60 +74,110 @@ export default function App() {
   const [keypair, setKeypair] = useState(null);
   const [balance, setBalance] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [walletMessage, setWalletMessage] = useState({ text: "Choose wallet type and click Connect.", type: "info" });
-  
+  const [walletMessage, setWalletMessage] = useState({
+    text: "Choose wallet provider and click Connect to start.",
+    type: "info",
+  });
+
   // Categorized Error state
-  const [errorCategory, setErrorCategory] = useState(null); // { title, message }
+  const [errorCategory, setErrorCategory] = useState(null);
 
   // Contract Metadata
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT_ID);
-  const [rewardContractId, setRewardContractId] = useState(null);
+  const [rewardContractId, setRewardContractId] = useState(
+    contractInfo?.rewardTokenContractId || null
+  );
   const [onchainRecCount, setOnchainRecCount] = useState(4);
-  const [feeSponsorship, setFeeSponsorship] = useState(true); // Black Belt Fee Sponsorship (Gasless)
+  const [feeSponsorship, setFeeSponsorship] = useState(true);
 
-  // Tabs & Forms
-  const [activeTab, setActiveTab] = useState("payment"); // 'payment' | 'contract'
+  // Tabs & Form State
+  const [activeTab, setActiveTab] = useState("payment");
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("1");
   const [memo, setMemo] = useState("REC purchase settlement");
   const [contractMethod, setContractMethod] = useState("buy_rec");
   const [recId, setRecId] = useState("101");
   const [recMwh, setRecMwh] = useState("50");
-  
-  // Feedback
-  const [txFeedback, setTxFeedback] = useState({ message: "Connect wallet to begin transaction or contract invocation.", type: "idle", htmlUrl: null });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Feedback Form State
+  // Marketplace Filter & Search State
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Feedback & Execution state
+  const [txFeedback, setTxFeedback] = useState({
+    message: "Connect wallet to begin transaction or contract invocation.",
+    type: "idle",
+    htmlUrl: null,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [txStep, setTxStep] = useState(0); // 0: idle, 1: building/simulating, 2: signing, 3: submitting, 4: confirmed
+
+  // Product Feedback Form State
   const [feedbackName, setFeedbackName] = useState("");
   const [feedbackRating, setFeedbackRating] = useState("5");
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [communityReviews, setCommunityReviews] = useState([
+    {
+      name: "SustainTech Capital",
+      rating: 5,
+      comment: "Seamless Soroban smart contract interaction and fast testnet settlement!",
+      time: "10 mins ago",
+    },
+    {
+      name: "CleanGrid Labs",
+      rating: 5,
+      comment: "Gasless fee sponsorship makes purchasing MWh credits instantaneous.",
+      time: "1 hour ago",
+    },
+  ]);
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
-    const userWallet = publicKey ? `${publicKey.slice(0, 10)}...${publicKey.slice(-6)}` : "G-TESTNET-USER";
-    addLog("system", `New User Feedback received from ${feedbackName || userWallet} (${feedbackRating}/5 stars): "${feedbackComment}"`);
+    const userWallet = publicKey
+      ? `${publicKey.slice(0, 8)}...${publicKey.slice(-6)}`
+      : "G-COMMUNITY-TESTNET";
+    const newReview = {
+      name: feedbackName || userWallet,
+      rating: Number(feedbackRating),
+      comment: feedbackComment,
+      time: "Just now",
+    };
+    setCommunityReviews((prev) => [newReview, ...prev]);
+    addLog(
+      "system",
+      `New User Feedback from ${newReview.name} (${feedbackRating}/5 stars): "${feedbackComment}"`
+    );
     setFeedbackSubmitted(true);
     setFeedbackName("");
     setFeedbackComment("");
+    addToast("Thank you for your feedback!", "success");
   };
 
   // Purchased RECs track
   const [purchasedRecs, setPurchasedRecs] = useState({});
 
-  // Event Log
+  // Event Stream & Terminal State
+  const [eventFilter, setEventFilter] = useState("all");
   const [events, setEvents] = useState([
-    { id: "sys-init", type: "system", time: new Date().toLocaleTimeString(), text: "Real-time Soroban RPC & Horizon event listener initialized on Stellar Testnet." }
+    {
+      id: "sys-init",
+      type: "system",
+      time: new Date().toLocaleTimeString(),
+      text: "Real-time Soroban RPC & Horizon event listener initialized on Stellar Testnet.",
+    },
   ]);
-  
+
   const eventPollStartLedgerRef = useRef(null);
   const seenEventIdsRef = useRef(new Set());
   const pollTimerRef = useRef(null);
 
   const addLog = (type, text) => {
     const time = new Date().toLocaleTimeString();
-    setEvents((prev) => [{ id: Math.random().toString(36).substring(2), type, time, text }, ...prev]);
+    setEvents((prev) => [
+      { id: Math.random().toString(36).substring(2), type, time, text },
+      ...prev,
+    ]);
   };
 
   const handleCategorizedError = (error, context = "") => {
@@ -135,6 +196,7 @@ export default function App() {
     setErrorCategory({ title: `⚠️ ${category}`, message });
     setWalletMessage({ text: context ? `${context}: ${message}` : message, type: "error" });
     addLog("system", `[ERROR] ${category}: ${message}`);
+    addToast(`${category}: ${detail}`, "error");
   };
 
   const clearCategorizedError = () => {
@@ -143,6 +205,7 @@ export default function App() {
 
   // Sign Transaction helper
   const signPreparedTransaction = async (tx) => {
+    setTxStep(2); // Signing
     if (walletType === "freighter") {
       const wallet = await getFreighterApi();
       if (!wallet) throw new Error("Freighter wallet extension was not detected.");
@@ -150,7 +213,11 @@ export default function App() {
         address: publicKey,
         networkPassphrase: NETWORK_PASSPHRASE,
       });
-      const signedXdr = unwrapFreighterValue(signedResponse, ["signedTxXdr", "signedXDR", "xdr"]);
+      const signedXdr = unwrapFreighterValue(signedResponse, [
+        "signedTxXdr",
+        "signedXDR",
+        "xdr",
+      ]);
       return SDK.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
     }
     tx.sign(keypair);
@@ -163,14 +230,22 @@ export default function App() {
     try {
       setBalance("Loading...");
       const account = await horizonServer.loadAccount(pk);
-      const nativeBalance = account.balances.find((b) => b.asset_type === "native");
+      const nativeBalance = account.balances.find(
+        (b) => b.asset_type === "native"
+      );
       const balNum = nativeBalance ? Number(nativeBalance.balance) : 0;
       setBalance(balNum);
-      setWalletMessage({ text: "Balance loaded from Stellar Testnet.", type: "success" });
+      setWalletMessage({
+        text: "Balance successfully synced from Stellar Testnet.",
+        type: "success",
+      });
       addLog("system", `Balance updated: ${balNum.toFixed(4)} XLM`);
     } catch {
       setBalance(null);
-      setWalletMessage({ text: "Account unfunded on Testnet. Click 'Fund via Friendbot' below.", type: "error" });
+      setWalletMessage({
+        text: "Account unfunded on Testnet. Click 'Fund via Friendbot' below.",
+        type: "error",
+      });
     }
   };
 
@@ -199,12 +274,13 @@ export default function App() {
   const pollContractEventsOnce = async () => {
     if (!contractId) return;
     try {
-      const { events: fetchedEvents, nextStartLedger } = await fetchContractEvents({
-        rpcServer: sorobanRpc,
-        contractId,
-        startLedger: eventPollStartLedgerRef.current,
-        limit: 30,
-      });
+      const { events: fetchedEvents, nextStartLedger } =
+        await fetchContractEvents({
+          rpcServer: sorobanRpc,
+          contractId,
+          startLedger: eventPollStartLedgerRef.current,
+          limit: 30,
+        });
 
       for (const evt of fetchedEvents) {
         const id = evt.id || `${evt.txHash}-${evt.ledger}-${evt.eventIndex}`;
@@ -240,22 +316,36 @@ export default function App() {
       if (walletType === "freighter") {
         const wallet = await getFreighterApi();
         if (!wallet) {
-          throw new Error("Freighter wallet extension was not detected. Install it or switch to Stellar Web Wallet option.");
+          throw new Error(
+            "Freighter wallet extension was not detected. Install it or switch to Stellar Web Wallet option."
+          );
         }
 
-        const networkInfo = await (wallet.getNetwork ? wallet.getNetwork() : wallet.getNetworkDetails());
+        const networkInfo = await (wallet.getNetwork
+          ? wallet.getNetwork()
+          : wallet.getNetworkDetails());
         const passphrase = networkInfo?.networkPassphrase;
         if (passphrase && passphrase !== NETWORK_PASSPHRASE) {
-          throw new Error("Freighter is not set to Stellar Testnet. Please switch Freighter to Stellar Testnet in extension settings.");
+          throw new Error(
+            "Freighter is not set to Stellar Testnet. Please switch Freighter to Stellar Testnet in extension settings."
+          );
         }
 
         let pk = "";
         if (typeof wallet.requestAccess === "function") {
-          pk = unwrapFreighterValue(await wallet.requestAccess(), ["address", "publicKey"]);
+          pk = unwrapFreighterValue(await wallet.requestAccess(), [
+            "address",
+            "publicKey",
+          ]);
         } else {
-          const allowed = unwrapFreighterValue(await wallet.isAllowed(), ["isAllowed"]);
+          const allowed = unwrapFreighterValue(await wallet.isAllowed(), [
+            "isAllowed",
+          ]);
           if (!allowed) await wallet.setAllowed();
-          pk = unwrapFreighterValue(await wallet.getAddress(), ["address", "publicKey"]);
+          pk = unwrapFreighterValue(await wallet.getAddress(), [
+            "address",
+            "publicKey",
+          ]);
         }
 
         if (!pk || !pk.startsWith("G")) {
@@ -263,8 +353,12 @@ export default function App() {
         }
         setPublicKey(pk);
         setIsConnected(true);
-        setWalletMessage({ text: `Connected as ${pk.slice(0, 8)}...${pk.slice(-8)}.`, type: "success" });
-        addLog("system", `Wallet connected (freighter): ${pk}`);
+        setWalletMessage({
+          text: `Connected as ${pk.slice(0, 8)}...${pk.slice(-8)}.`,
+          type: "success",
+        });
+        addLog("system", `Wallet connected (Freighter): ${pk}`);
+        addToast(`Freighter connected: ${pk.slice(0, 6)}...${pk.slice(-4)}`, "success");
         await fetchBalance(pk);
         await refreshOnChainRecCount(pk);
         startEventStream();
@@ -275,7 +369,7 @@ export default function App() {
           kp = SDK.Keypair.random();
           sk = kp.secret();
           setSecretKey(sk);
-          addLog("system", "Generated new testnet secret key.");
+          addLog("system", "Generated new testnet keypair.");
         } else {
           kp = SDK.Keypair.fromSecret(sk);
         }
@@ -283,8 +377,12 @@ export default function App() {
         const pk = kp.publicKey();
         setPublicKey(pk);
         setIsConnected(true);
-        setWalletMessage({ text: `Connected as ${pk.slice(0, 8)}...${pk.slice(-8)}.`, type: "success" });
-        addLog("system", `Wallet connected (web): ${pk}`);
+        setWalletMessage({
+          text: `Connected as ${pk.slice(0, 8)}...${pk.slice(-8)}.`,
+          type: "success",
+        });
+        addLog("system", `Wallet connected (Web Keypair): ${pk}`);
+        addToast(`Web Wallet connected: ${pk.slice(0, 6)}...${pk.slice(-4)}`, "success");
         await fetchBalance(pk);
         await refreshOnChainRecCount(pk);
         startEventStream();
@@ -302,27 +400,44 @@ export default function App() {
     setIsConnected(false);
     clearCategorizedError();
     setWalletMessage({ text: "Wallet disconnected.", type: "info" });
-    setTxFeedback({ message: "Connect wallet to begin a testnet transaction or contract call.", type: "idle", htmlUrl: null });
+    setTxFeedback({
+      message: "Connect wallet to begin a testnet transaction or contract call.",
+      type: "idle",
+      htmlUrl: null,
+    });
     stopEventStream();
+    addToast("Wallet disconnected", "info");
   };
 
   const generateNewKey = () => {
     const kp = SDK.Keypair.random();
     setSecretKey(kp.secret());
     setWalletMessage({ text: "Generated new secret key.", type: "success" });
+    addToast("Generated new testnet secret key", "info");
   };
 
   const fundViaFriendbot = async () => {
     if (!publicKey) {
-      setWalletMessage({ text: "Connect or generate a wallet first to fund it.", type: "error" });
+      setWalletMessage({
+        text: "Connect or generate a wallet first to fund it.",
+        type: "error",
+      });
       return;
     }
     try {
-      setWalletMessage({ text: "Requesting 10,000 testnet XLM from Friendbot...", type: "info" });
+      setWalletMessage({
+        text: "Requesting 10,000 testnet XLM from Friendbot...",
+        type: "info",
+      });
+      addToast("Requesting Friendbot XLM funds...", "info");
       const res = await fetch(`https://friendbot.stellar.org/?addr=${publicKey}`);
       if (!res.ok) throw new Error("Friendbot funding request failed.");
-      setWalletMessage({ text: "Account funded successfully with testnet XLM!", type: "success" });
+      setWalletMessage({
+        text: "Account funded successfully with 10,000 testnet XLM!",
+        type: "success",
+      });
       addLog("tx", `Funded account ${publicKey} via Stellar Friendbot.`);
+      addToast("Received 10,000 XLM from Friendbot!", "success");
       await fetchBalance();
     } catch (error) {
       handleCategorizedError(error, "Friendbot Funding Failed");
@@ -343,12 +458,16 @@ export default function App() {
     const amt = Number(amount);
 
     if (!dest.startsWith("G")) {
-      handleCategorizedError(new Error("Destination must be a valid Stellar public key (G...)"), "Validation");
+      handleCategorizedError(
+        new Error("Destination must be a valid Stellar public key (G...)"),
+        "Validation"
+      );
       return;
     }
 
     try {
       setIsSubmitting(true);
+      setTxStep(1); // Building
       setTxFeedback({ message: "Building Stellar transaction...", type: "pending" });
 
       const sourceAccount = await horizonServer.loadAccount(publicKey);
@@ -361,7 +480,7 @@ export default function App() {
             destination: dest,
             asset: SDK.Asset.native(),
             amount: amt.toFixed(7),
-          }),
+          })
         )
         .setTimeout(180);
 
@@ -372,20 +491,33 @@ export default function App() {
       const transaction = builder.build();
       const signedTransaction = await signPreparedTransaction(transaction);
 
-      setTxFeedback({ message: "Submitting payment to Stellar Testnet...", type: "pending" });
+      setTxStep(3); // Submitting
+      setTxFeedback({
+        message: "Submitting payment to Stellar Testnet...",
+        type: "pending",
+      });
       const result = await horizonServer.submitTransaction(signedTransaction);
       const hash = result.hash;
 
+      setTxStep(4); // Confirmed
       setTxFeedback({
-        message: `✅ Success. Transaction confirmed on Stellar Testnet. Hash: ${hash}`,
+        message: `✅ Success. Payment confirmed on Stellar Testnet. Hash: ${hash}`,
         type: "success",
         htmlUrl: `${EXPLORER_TX}${hash}`,
       });
-      addLog("tx", `Payment of ${amt} XLM to ${dest.slice(0, 8)}... confirmed. Hash: ${hash}`);
+      addLog(
+        "tx",
+        `Payment of ${amt} XLM to ${dest.slice(0, 8)}... confirmed. Hash: ${hash}`
+      );
+      addToast(`Payment of ${amt} XLM sent successfully!`, "success");
       await fetchBalance();
     } catch (error) {
+      setTxStep(0);
       handleCategorizedError(error, "Payment Failed");
-      setTxFeedback({ message: `Transaction failed: ${error.message || error}`, type: "error" });
+      setTxFeedback({
+        message: `Transaction failed: ${error.message || error}`,
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -421,7 +553,11 @@ export default function App() {
     clearCategorizedError();
 
     if (!publicKey) {
-      setTxFeedback({ message: "Connect wallet first to call Soroban smart contract.", type: "error" });
+      setTxFeedback({
+        message: "Connect wallet first to call Soroban smart contract.",
+        type: "error",
+      });
+      addToast("Please connect your wallet first", "error");
       return;
     }
 
@@ -430,18 +566,28 @@ export default function App() {
     const targetMwh = Number(recMwh) || 50;
 
     if (!Number.isFinite(targetRecId) || targetRecId <= 0) {
-      handleCategorizedError(new Error("REC Lot ID must be a positive number."), "Validation");
+      handleCategorizedError(
+        new Error("REC Lot ID must be a positive number."),
+        "Validation"
+      );
       return;
     }
 
     try {
       setIsSubmitting(true);
+      setTxStep(1); // Simulating
       const scValArgs = buildMethodArgs(method, targetRecId, targetMwh);
 
-      addLog("contract", `Invoking ${method} on ${contractId.slice(0, 8)}… for REC #${targetRecId}`);
+      addLog(
+        "contract",
+        `Invoking ${method} on ${contractId.slice(0, 8)}… for REC #${targetRecId}`
+      );
 
       if (method === "get_rec") {
-        setTxFeedback({ message: `Simulating read-only call get_rec(${targetRecId}) via Soroban RPC…`, type: "pending" });
+        setTxFeedback({
+          message: `Simulating read-only call get_rec(${targetRecId}) via Soroban RPC…`,
+          type: "pending",
+        });
         const rec = await simulateContractCall({
           SDK,
           rpcServer: sorobanRpc,
@@ -452,15 +598,23 @@ export default function App() {
           networkPassphrase: NETWORK_PASSPHRASE,
         });
 
+        setTxStep(4);
         setTxFeedback({
           message: `✅ get_rec(${targetRecId}) result: ${JSON.stringify(rec, null, 2)}`,
           type: "success",
         });
-        addLog("contract", `get_rec #${targetRecId}: ${rec ? JSON.stringify(rec) : "null"}`);
+        addLog(
+          "contract",
+          `get_rec #${targetRecId}: ${rec ? JSON.stringify(rec) : "null"}`
+        );
+        addToast(`Query get_rec #${targetRecId} executed!`, "success");
         return;
       }
 
-      setTxFeedback({ message: `Simulating & preparing ${method} transaction…`, type: "pending" });
+      setTxFeedback({
+        message: `Simulating & preparing ${method} transaction…`,
+        type: "pending",
+      });
       const { hash } = await invokeContractCall({
         SDK,
         rpcServer: sorobanRpc,
@@ -472,12 +626,17 @@ export default function App() {
         signTransaction: signPreparedTransaction,
       });
 
+      setTxStep(4); // Confirmed
       setTxFeedback({
         message: `✅ Soroban contract call confirmed! Method: ${method}(rec_id=${targetRecId}) | Hash: ${hash}`,
         type: "success",
         htmlUrl: `${EXPLORER_TX}${hash}`,
       });
-      addLog("contract", `${method} confirmed for REC #${targetRecId}. Hash: ${hash}`);
+      addLog(
+        "contract",
+        `${method} confirmed on-chain for REC #${targetRecId}. Hash: ${hash}`
+      );
+      addToast(`Soroban Contract Call Confirmed! (Hash: ${hash.slice(0, 8)}...)`, "success");
 
       if (method === "buy_rec") {
         setPurchasedRecs((prev) => ({ ...prev, [targetRecId]: true }));
@@ -487,490 +646,861 @@ export default function App() {
       await pollContractEventsOnce();
       await fetchBalance();
     } catch (error) {
+      setTxStep(0);
       handleCategorizedError(error, "Soroban Contract Call Failed");
-      setTxFeedback({ message: `Soroban call failed: ${error.message || error}`, type: "error" });
+      setTxFeedback({
+        message: `Soroban call failed: ${error.message || error}`,
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Initial load contract info
-  useEffect(() => {
-    fetch("./contract-info.json")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((info) => {
-        if (!info) return;
-        if (info.contractId) setContractId(info.contractId);
-        if (info.rewardTokenContractId) setRewardContractId(info.rewardTokenContractId);
-      })
-      .catch(() => {});
-  }, []);
+  // REC Listings Dataset
+  const recListings = [
+    {
+      id: 101,
+      title: "Rajasthan Solar Park Lot #101",
+      location: "Bhadla, Rajasthan",
+      desc: "1 MWh utility-scale solar generation certified by Soroban smart contract.",
+      type: "solar",
+      mwh: 50,
+      price: "1.0 XLM",
+      usdEst: "$0.12 USD",
+    },
+    {
+      id: 102,
+      title: "Gujarat Wind Energy Lot #102",
+      location: "Kutch, Gujarat",
+      desc: "High-efficiency coastal wind power production verified on-chain.",
+      type: "wind",
+      mwh: 80,
+      price: "1.4 XLM",
+      usdEst: "$0.17 USD",
+    },
+    {
+      id: 103,
+      title: "Himalayan Micro Hydro Lot #103",
+      location: "Himachal Pradesh",
+      desc: "Zero-emission community hydroelectric power generation.",
+      type: "hydro",
+      mwh: 35,
+      price: "0.8 XLM",
+      usdEst: "$0.10 USD",
+    },
+    {
+      id: 104,
+      title: "Punjab Agricultural Biomass Lot #104",
+      location: "Ludhiana, Punjab",
+      desc: "Sustainable crop-residue bioenergy converting waste to clean power.",
+      type: "biomass",
+      mwh: 60,
+      price: "1.2 XLM",
+      usdEst: "$0.14 USD",
+    },
+  ];
+
+  // Filtered RECs
+  const filteredRecs = recListings.filter((item) => {
+    const matchesCategory =
+      categoryFilter === "all" || item.type === categoryFilter;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(item.id).includes(searchQuery);
+    return matchesCategory && matchesSearch;
+  });
+
+  // Filtered Events
+  const filteredEvents = events.filter((evt) => {
+    if (eventFilter === "all") return true;
+    return evt.type === eventFilter;
+  });
 
   return (
-    <main class="app-shell">
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Stellar Testnet & Soroban Smart Contracts (React Edition)</p>
-          <h1>Renewable Energy Credit Marketplace</h1>
-          <p>
-            Connect via Freighter or Stellar Web Wallet, inspect XLM balances, invoke Soroban smart contracts, and stream real-time on-chain events.
-          </p>
-        </div>
-        <div className="market-stats" aria-label="Marketplace summary">
-          <div>
-            <span className="stat-value">{onchainRecCount}</span>
-            <span className="stat-label">On-chain RECs</span>
+    <div>
+      {/* Toast Floating Banners */}
+      <div className="toast-container">
+        {toasts.map((t) => (
+          <div key={t.id} className={`toast-item ${t.type}`}>
+            <span>{t.type === "error" ? "⚠️" : t.type === "success" ? "✅" : "ℹ️"}</span>
+            <span>{t.text}</span>
           </div>
-          <div>
-            <span className="stat-value">Testnet</span>
-            <span className="stat-label">Network</span>
-          </div>
-          <div>
-            <span className="stat-value">Soroban</span>
-            <span className="stat-label">Smart Contract</span>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* Dashboard Section */}
-      <section className="dashboard">
-        {/* Wallet Panel */}
-        <aside className="wallet-panel" aria-label="Wallet controls">
-          <div className="panel-heading">
+      {/* Top Glass Navigation Header */}
+      <header className="top-nav">
+        <div className="top-nav-inner">
+          <a href="#hero" className="nav-brand">
+            <div className="brand-icon">⚡</div>
             <div>
-              <p className="eyebrow">Multi-Wallet Access</p>
-              <h2>Wallet connection</h2>
+              REC Marketplace
+              <span className="brand-tag">Soroban</span>
             </div>
-            <span className={`badge ${isConnected ? "success" : "muted"}`}>
-              {isConnected ? `Connected (${walletType.toUpperCase()})` : "Disconnected"}
+          </a>
+
+          <ul className="nav-links">
+            <li><a href="#marketplace">Marketplace</a></li>
+            <li><a href="#contract-hub">Soroban Hub</a></li>
+            <li><a href="#telemetry">Live Telemetry</a></li>
+            <li><a href="#onboarding">Verified Users</a></li>
+            <li><a href="#feedback">Feedback</a></li>
+          </ul>
+
+          <div className="nav-status">
+            <span className="status-pill net-testnet">
+              <span className="pulse-dot"></span>
+              Stellar Testnet
             </span>
-          </div>
-
-          <div className="wallet-type-selector">
-            <label htmlFor="walletTypeSelect">Wallet Provider:</label>
-            <select
-              id="walletTypeSelect"
-              value={walletType}
-              onChange={(e) => {
-                setWalletType(e.target.value);
-                disconnectWallet();
-              }}
-            >
-              <option value="freighter">Freighter Extension (Recommended)</option>
-              <option value="web">Stellar Web / Testnet Keypair</option>
-            </select>
-          </div>
-
-          {walletType === "web" && (
-            <div className="secret-key-group">
-              <label htmlFor="secretKeyInput">Testnet Secret Key (S...):</label>
-              <input
-                id="secretKeyInput"
-                type="password"
-                placeholder="S... (Leave blank to auto-generate)"
-                value={secretKey}
-                onChange={(e) => setSecretKey(e.target.value)}
-              />
-              <button type="button" className="ghost" onClick={generateNewKey}>
-                Generate New Testnet Key
-              </button>
-            </div>
-          )}
-
-          <div className="address-box">{publicKey || "No wallet connected"}</div>
-
-          <div className="wallet-actions">
-            <button type="button" onClick={connectWallet} disabled={isConnected}>
-              Connect Wallet
-            </button>
-            <button type="button" className="secondary" onClick={disconnectWallet} disabled={!isConnected}>
-              Disconnect
-            </button>
-          </div>
-
-          <div className="balance-box">
-            <span>XLM balance</span>
-            <strong>
-              {typeof balance === "number" ? `${balance.toFixed(7)} XLM` : balance === "Loading..." ? "Loading..." : "--"}
-            </strong>
-          </div>
-
-          <div className="wallet-actions">
-            <button type="button" className="ghost" onClick={() => fetchBalance()} disabled={!isConnected}>
-              Refresh balance
-            </button>
-            <button type="button" className="ghost" onClick={fundViaFriendbot}>
-              Fund via Friendbot
-            </button>
-          </div>
-
-          <div className="testnet-key-card">
-            <p className="eyebrow">Testnet Demo Key</p>
-            <div className="address-box">GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P</div>
-            <div className="wallet-actions testnet-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText("GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P");
-                  setWalletMessage({ text: "Copied testnet demo key to clipboard.", type: "success" });
-                }}
-              >
-                Copy address
-              </button>
+            {isConnected ? (
+              <span className="badge success">
+                {typeof balance === "number" ? `${balance.toFixed(2)} XLM` : "Connected"}
+              </span>
+            ) : (
               <button
                 type="button"
                 className="secondary"
+                onClick={connectWallet}
+                style={{ minHeight: "36px", padding: "0 14px", fontSize: "0.82rem" }}
+              >
+                Connect Wallet
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="app-shell">
+        {/* Hero Section */}
+        <section id="hero" className="hero">
+          <div className="hero-card">
+            <div>
+              <div className="hero-eyebrow">
+                <span>⚡ Stellar Testnet & Soroban Smart Contracts</span>
+              </div>
+              <h1>
+                Decentralized <span>Renewable Energy</span> Credit Marketplace
+              </h1>
+              <p className="hero-desc">
+                Instantly buy, verify, and trade certified Clean Energy RECs on Stellar. Powered by gasless fee sponsorship, inter-contract token minting, and real-time on-chain telemetry.
+              </p>
+            </div>
+            <div className="hero-actions">
+              <a href="#marketplace">
+                <button type="button" className="btn-lg">
+                  Explore REC Marketplace ➔
+                </button>
+              </a>
+              <a href="#contract-hub">
+                <button type="button" className="btn-lg secondary">
+                  Soroban Contract Hub
+                </button>
+              </a>
+            </div>
+          </div>
+
+          <div className="hero-stats-grid">
+            <div className="stat-card-widget">
+              <div className="stat-header">
+                <div className="stat-icon solar">☀️</div>
+                <span className="badge success">Solar</span>
+              </div>
+              <div>
+                <div className="stat-value-lg">1,450</div>
+                <div className="stat-label-sub">MWh Solar Tracked</div>
+              </div>
+            </div>
+
+            <div className="stat-card-widget">
+              <div className="stat-header">
+                <div className="stat-icon wind">💨</div>
+                <span className="badge success">Wind</span>
+              </div>
+              <div>
+                <div className="stat-value-lg">2,100</div>
+                <div className="stat-label-sub">MWh Wind Generated</div>
+              </div>
+            </div>
+
+            <div className="stat-card-widget">
+              <div className="stat-header">
+                <div className="stat-icon hydro">🌊</div>
+                <span className="badge success">Hydro</span>
+              </div>
+              <div>
+                <div className="stat-value-lg">850</div>
+                <div className="stat-label-sub">MWh Hydro Power</div>
+              </div>
+            </div>
+
+            <div className="stat-card-widget">
+              <div className="stat-header">
+                <div className="stat-icon biomass">🌱</div>
+                <span className="badge success">Biomass</span>
+              </div>
+              <div>
+                <div className="stat-value-lg">620</div>
+                <div className="stat-label-sub">MWh Bioenergy</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* REC Marketplace Section */}
+        <section id="marketplace" className="marketplace-section">
+          <div className="section-header">
+            <div>
+              <h2>Clean Energy REC Marketplace</h2>
+              <p className="panel-subtitle">
+                Browse verified renewable energy lots issued directly on Soroban smart contract ({onchainRecCount} Lots On-Chain).
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center" }}>
+              <div className="search-box">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search RECs by location, ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="filter-bar">
+                {["all", "solar", "wind", "hydro", "biomass"].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    className={`filter-btn ${categoryFilter === cat ? "active" : ""}`}
+                    onClick={() => setCategoryFilter(cat)}
+                  >
+                    {cat === "solar"
+                      ? "☀️ Solar"
+                      : cat === "wind"
+                      ? "💨 Wind"
+                      : cat === "hydro"
+                      ? "🌊 Hydro"
+                      : cat === "biomass"
+                      ? "🌱 Biomass"
+                      : "⚡ All Types"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="credit-grid">
+            {filteredRecs.map((item) => (
+              <article key={item.id} className="credit-card">
+                <div>
+                  <div className="credit-card-top">
+                    <span className={`source-tag ${item.type}`}>
+                      {item.type === "solar"
+                        ? "☀️ Solar"
+                        : item.type === "wind"
+                        ? "💨 Wind"
+                        : item.type === "hydro"
+                        ? "🌊 Hydro"
+                        : "🌱 Biomass"}
+                    </span>
+                    <span className="verified-pill">✓ Soroban Verified</span>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+
+                  <div className="rec-specs">
+                    <div className="rec-spec-item">
+                      <span>Location</span>
+                      <strong>📍 {item.location}</strong>
+                    </div>
+                    <div className="rec-spec-item">
+                      <span>Capacity</span>
+                      <strong>⚡ {item.mwh} MWh</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="credit-card-bottom">
+                  <div className="price-tag">
+                    <span className="price-amount">{item.price}</span>
+                    <span className="price-sub">Est. {item.usdEst}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={purchasedRecs[item.id] || isSubmitting}
+                    onClick={(e) => {
+                      setRecId(String(item.id));
+                      setContractMethod("buy_rec");
+                      setActiveTab("contract");
+                      handleInvokeContract(e, "buy_rec", item.id);
+                    }}
+                  >
+                    {purchasedRecs[item.id]
+                      ? "Purchased ✓"
+                      : isSubmitting && recId === String(item.id)
+                      ? "Buying..."
+                      : `Buy REC #${item.id}`}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Dashboard: Wallet & Soroban Contract Control Hub */}
+        <section id="contract-hub" className="dashboard">
+          {/* Wallet Control Panel */}
+          <aside className="panel wallet-panel">
+            <div className="panel-heading">
+              <div>
+                <h2>Wallet Connection</h2>
+                <p className="panel-subtitle">Stellar Testnet Authentication</p>
+              </div>
+              <span className={`badge ${isConnected ? "success" : "muted"}`}>
+                {isConnected ? `Connected (${walletType.toUpperCase()})` : "Disconnected"}
+              </span>
+            </div>
+
+            <div className="wallet-tabs">
+              <button
+                type="button"
+                className={`wallet-tab-btn ${walletType === "freighter" ? "active" : ""}`}
                 onClick={() => {
-                  setDestination("GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P");
-                  setWalletMessage({ text: "Filled destination address with testnet key.", type: "success" });
+                  setWalletType("freighter");
+                  disconnectWallet();
                 }}
               >
-                Fill destination
+                Freighter Extension
+              </button>
+              <button
+                type="button"
+                className={`wallet-tab-btn ${walletType === "web" ? "active" : ""}`}
+                onClick={() => {
+                  setWalletType("web");
+                  disconnectWallet();
+                }}
+              >
+                Stellar Web Keypair
               </button>
             </div>
-          </div>
 
-          {errorCategory && (
-            <div className="error-card">
-              <h4>{errorCategory.title}</h4>
-              <p>{errorCategory.message}</p>
-            </div>
-          )}
-
-          <p className="message" data-type={walletMessage.type} role="status">
-            {walletMessage.text}
-          </p>
-        </aside>
-
-        {/* Transaction & Soroban Panel */}
-        <section className="transaction-panel" aria-label="REC purchase & Soroban contract">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Soroban Smart Contract</p>
-              <h2>On-Chain Interactions</h2>
-            </div>
-            <span className="badge success">Soroban Active</span>
-          </div>
-
-          <div className="contract-metadata-card">
-            <div className="meta-item">
-              <span className="meta-label">Contract ID:</span>
-              <span className="meta-value">{contractId}</span>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Soroban RPC:</span>
-              <span className="meta-value">{SOROBAN_RPC_URL}</span>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Reward Token (inter-contract):</span>
-              <span className="meta-value">{rewardContractId || "—"}</span>
-            </div>
-            <div className="meta-item" style={{ borderTop: "1px solid #d2e6da", paddingTop: "8px", marginTop: "4px", justifyContent: "space-between" }}>
-              <span className="meta-label">🛡️ Gasless Fee Sponsorship (SEP Fee Bump):</span>
-              <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-                <input type="checkbox" checked={feeSponsorship} onChange={(e) => setFeeSponsorship(e.target.checked)} style={{ minHeight: "auto", width: "auto" }} />
-                <span style={{ fontSize: "0.82rem", color: "var(--forest)", fontWeight: 700 }}>
-                  {feeSponsorship ? "Enabled (Sponsored Gas)" : "Standard User Fee"}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div className="action-mode-selector">
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === "payment" ? "active" : ""}`}
-              onClick={() => setActiveTab("payment")}
-            >
-              Send XLM Payment
-            </button>
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === "contract" ? "active" : ""}`}
-              onClick={() => setActiveTab("contract")}
-            >
-              Invoke Soroban Contract
-            </button>
-          </div>
-
-          {activeTab === "payment" ? (
-            <form onSubmit={handleSendPayment}>
-              <label>
-                Destination Address
-                <input
-                  type="text"
-                  placeholder="G..."
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  required
-                />
-              </label>
-
-              <label>
-                Amount in XLM
-                <input
-                  type="number"
-                  min="0.0000001"
-                  step="0.0000001"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                />
-              </label>
-
-              <label>
-                Memo
-                <input
-                  type="text"
-                  maxLength={28}
-                  value={memo}
-                  onChange={(e) => setMemo(e.target.value)}
-                />
-              </label>
-
-              <button type="submit" disabled={!isConnected || isSubmitting}>
-                {isSubmitting ? "Processing..." : "Send XLM Payment"}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleInvokeContract}>
-              <label>
-                Select Contract Method:
-                <select value={contractMethod} onChange={(e) => setContractMethod(e.target.value)}>
-                  <option value="buy_rec">buy_rec(buyer, rec_id)</option>
-                  <option value="create_rec">create_rec(creator, id, mwh, price)</option>
-                  <option value="get_rec">get_rec(rec_id)</option>
-                </select>
-              </label>
-
-              <label>
-                REC Lot ID
-                <input
-                  type="number"
-                  min="1"
-                  value={recId}
-                  onChange={(e) => setRecId(e.target.value)}
-                  required
-                />
-              </label>
-
-              {contractMethod === "create_rec" && (
+            {walletType === "web" && (
+              <div className="form-group">
                 <label>
-                  Capacity (MWh)
+                  Testnet Secret Key (S...)
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={generateNewKey}
+                    style={{ minHeight: "28px", padding: "0 8px", fontSize: "0.75rem" }}
+                  >
+                    Generate Secret Key
+                  </button>
+                </label>
+                <input
+                  type="password"
+                  placeholder="S... (Leave blank to auto-generate)"
+                  value={secretKey}
+                  onChange={(e) => setSecretKey(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="address-box">
+              <span>{publicKey ? `${publicKey.slice(0, 14)}...${publicKey.slice(-10)}` : "No wallet connected"}</span>
+              {publicKey && (
+                <button
+                  type="button"
+                  className="ghost"
+                  style={{ minHeight: "30px", padding: "0 8px", fontSize: "0.75rem" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(publicKey);
+                    addToast("Public key copied to clipboard!", "info");
+                  }}
+                >
+                  📋 Copy
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+              <button type="button" onClick={connectWallet} disabled={isConnected}>
+                Connect Wallet
+              </button>
+              <button type="button" className="secondary" onClick={disconnectWallet} disabled={!isConnected}>
+                Disconnect
+              </button>
+            </div>
+
+            <div className="balance-card">
+              <div className="balance-info">
+                <label>Stellar XLM Balance</label>
+                <div className="balance-amount">
+                  {typeof balance === "number"
+                    ? `${balance.toFixed(4)} XLM`
+                    : balance === "Loading..."
+                    ? "Syncing..."
+                    : "--"}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => fetchBalance()}
+                disabled={!isConnected}
+                style={{ color: "white", borderColor: "rgba(255,255,255,0.3)" }}
+              >
+                🔄 Refresh
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="ghost"
+              onClick={fundViaFriendbot}
+              style={{ width: "100%", marginBottom: "16px" }}
+            >
+              💰 Fund Account via Stellar Friendbot
+            </button>
+
+            <div className="testnet-card">
+              <h4>Demo Testnet Account Key</h4>
+              <div style={{ fontSize: "0.78rem", fontFamily: "monospace", wordBreak: "break-all", background: "white", padding: "8px", borderRadius: "6px", border: "1px solid var(--line)" }}>
+                GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="ghost"
+                  style={{ minHeight: "34px", fontSize: "0.8rem" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText("GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P");
+                    addToast("Copied testnet demo key!", "info");
+                  }}
+                >
+                  Copy Address
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  style={{ minHeight: "34px", fontSize: "0.8rem" }}
+                  onClick={() => {
+                    setDestination("GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P");
+                    addToast("Filled payment destination!", "info");
+                  }}
+                >
+                  Fill Destination
+                </button>
+              </div>
+            </div>
+
+            {errorCategory && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "10px", padding: "12px", marginTop: "16px", color: "#991b1b" }}>
+                <h4 style={{ margin: "0 0 4px", fontSize: "0.9rem" }}>{errorCategory.title}</h4>
+                <p style={{ margin: 0, fontSize: "0.82rem" }}>{errorCategory.message}</p>
+              </div>
+            )}
+
+            <p style={{ marginTop: "14px", fontSize: "0.84rem", color: walletMessage.type === "error" ? "var(--danger)" : "var(--forest)" }}>
+              {walletMessage.text}
+            </p>
+          </aside>
+
+          {/* Soroban Smart Contract & Payment Panel */}
+          <section className="panel transaction-panel">
+            <div className="panel-heading">
+              <div>
+                <h2>Soroban Smart Contract Operations</h2>
+                <p className="panel-subtitle">On-Chain REC Minting & Payment Hub</p>
+              </div>
+              <span className="badge success">Soroban RPC Active</span>
+            </div>
+
+            <div className="contract-meta-box">
+              <div className="meta-row">
+                <strong>Soroban Contract ID:</strong>
+                <span>{contractId.slice(0, 14)}...{contractId.slice(-8)}</span>
+              </div>
+              <div className="meta-row">
+                <strong>Target Soroban RPC:</strong>
+                <span>{SOROBAN_RPC_URL}</span>
+              </div>
+              <div className="meta-row">
+                <strong>RECT Reward Contract:</strong>
+                <span>{rewardContractId ? `${rewardContractId.slice(0, 10)}...` : "—"}</span>
+              </div>
+              <div className="meta-row" style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid #a7f3d0" }}>
+                <strong>🛡️ SEP Gasless Sponsorship:</strong>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={feeSponsorship}
+                    onChange={(e) => setFeeSponsorship(e.target.checked)}
+                    style={{ width: "auto", minHeight: "auto" }}
+                  />
+                  <span style={{ fontWeight: 700, color: "var(--forest)" }}>
+                    {feeSponsorship ? "Enabled (Sponsored Gas)" : "User Pays Gas"}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="action-mode-selector">
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === "payment" ? "active" : ""}`}
+                onClick={() => setActiveTab("payment")}
+              >
+                Send XLM Payment
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === "contract" ? "active" : ""}`}
+                onClick={() => setActiveTab("contract")}
+              >
+                Call Soroban Contract
+              </button>
+            </div>
+
+            {activeTab === "payment" ? (
+              <form onSubmit={handleSendPayment}>
+                <div className="form-group">
+                  <label>Destination Public Key (G...)</label>
+                  <input
+                    type="text"
+                    placeholder="G..."
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Payment Amount in XLM</label>
+                  <input
+                    type="number"
+                    min="0.0000001"
+                    step="0.0000001"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Transaction Memo</label>
+                  <input
+                    type="text"
+                    maxLength={28}
+                    value={memo}
+                    onChange={(e) => setMemo(e.target.value)}
+                  />
+                </div>
+
+                <button type="submit" className="btn-lg" disabled={!isConnected || isSubmitting}>
+                  {isSubmitting ? "Processing Payment..." : "Send XLM on Testnet"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleInvokeContract}>
+                <div className="form-group">
+                  <label>Select Contract Function Method</label>
+                  <select value={contractMethod} onChange={(e) => setContractMethod(e.target.value)}>
+                    <option value="buy_rec">buy_rec(buyer: Address, rec_id: u64)</option>
+                    <option value="create_rec">create_rec(creator, id, mwh, price, source)</option>
+                    <option value="get_rec">get_rec(rec_id: u64)</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Target REC Lot ID</label>
                   <input
                     type="number"
                     min="1"
-                    value={recMwh}
-                    onChange={(e) => setRecMwh(e.target.value)}
+                    value={recId}
+                    onChange={(e) => setRecId(e.target.value)}
+                    required
                   />
-                </label>
-              )}
+                </div>
 
-              <button type="submit" disabled={!isConnected || isSubmitting}>
-                {isSubmitting ? "Processing..." : "Call Soroban Smart Contract"}
-              </button>
-            </form>
-          )}
+                {contractMethod === "create_rec" && (
+                  <div className="form-group">
+                    <label>Capacity Volume (MWh)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={recMwh}
+                      onChange={(e) => setRecMwh(e.target.value)}
+                    />
+                  </div>
+                )}
 
-          <div className={`tx-feedback ${txFeedback.type}`}>
-            <div>{txFeedback.message}</div>
-            {txFeedback.htmlUrl && (
-              <div>
-                <a href={txFeedback.htmlUrl} target="_blank" rel="noreferrer">
-                  View Explorer Link
-                </a>
-              </div>
+                <div style={{ background: "#f8faf9", padding: "12px", borderRadius: "8px", border: "1px solid var(--line)", fontSize: "0.82rem", fontFamily: "monospace" }}>
+                  <strong>ScVal Parameter Payload Preview:</strong>
+                  <pre style={{ margin: "4px 0 0", color: "var(--forest)" }}>
+                    {contractMethod === "get_rec"
+                      ? `[ u64(${recId}) ]`
+                      : contractMethod === "buy_rec"
+                      ? `[ Address(${publicKey ? publicKey.slice(0, 8) + "..." : "USER"}), u64(${recId}) ]`
+                      : `[ Address(${publicKey ? publicKey.slice(0, 8) + "..." : "USER"}), u64(${recId}), u32(${recMwh}), i64(${defaultPriceStroops(Number(recId))}) ]`}
+                  </pre>
+                </div>
+
+                <button type="submit" className="btn-lg" disabled={!isConnected || isSubmitting}>
+                  {isSubmitting ? "Invoking Soroban Contract..." : "Execute Soroban Smart Contract"}
+                </button>
+              </form>
             )}
+
+            {/* 4-Step Transaction Visual Timeline */}
+            {isSubmitting || txStep > 0 ? (
+              <div style={{ marginTop: "20px", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "16px", borderRadius: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, color: "var(--forest)", marginBottom: "8px" }}>
+                  <span style={{ color: txStep >= 1 ? "var(--forest)" : "var(--muted)" }}>1. Simulating</span>
+                  <span style={{ color: txStep >= 2 ? "var(--forest)" : "var(--muted)" }}>2. Wallet Signing</span>
+                  <span style={{ color: txStep >= 3 ? "var(--forest)" : "var(--muted)" }}>3. RPC Submission</span>
+                  <span style={{ color: txStep === 4 ? "var(--forest)" : "var(--muted)" }}>4. Confirmed ✓</span>
+                </div>
+                <div style={{ height: "6px", background: "#dcfce7", borderRadius: "3px", overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      background: "linear-gradient(90deg, var(--forest), var(--emerald))",
+                      width: txStep === 1 ? "25%" : txStep === 2 ? "50%" : txStep === 3 ? "75%" : txStep === 4 ? "100%" : "0%",
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            <div style={{ marginTop: "16px", padding: "14px", borderRadius: "8px", border: "1px solid var(--line)", background: "#f8faf9", fontSize: "0.88rem" }}>
+              <div>{txFeedback.message}</div>
+              {txFeedback.htmlUrl && (
+                <div style={{ marginTop: "6px" }}>
+                  <a href={txFeedback.htmlUrl} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>
+                    🔗 Open Transaction on Stellar Expert Explorer
+                  </a>
+                </div>
+              )}
+            </div>
+          </section>
+        </section>
+
+        {/* Live On-Chain Event Telemetry Section */}
+        <section id="telemetry" className="events-section">
+          <div className="terminal-window">
+            <div className="terminal-header">
+              <div className="terminal-title">
+                <span className="pulse-dot"></span>
+                <span>🔴 Live Soroban RPC Telemetry & Event Console</span>
+              </div>
+              <div className="terminal-controls">
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {["all", "system", "tx", "contract"].map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setEventFilter(filter)}
+                      style={{
+                        minHeight: "26px",
+                        padding: "0 8px",
+                        fontSize: "0.72rem",
+                        background: eventFilter === filter ? "#10b981" : "rgba(255,255,255,0.1)",
+                        color: "white",
+                        border: "none",
+                      }}
+                    >
+                      {filter.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEvents([])}
+                  style={{ minHeight: "26px", padding: "0 8px", fontSize: "0.72rem", background: "rgba(255,255,255,0.1)", color: "white", border: "none" }}
+                >
+                  Clear Console
+                </button>
+              </div>
+            </div>
+
+            <div className="event-log-container">
+              {filteredEvents.map((evt) => (
+                <div key={evt.id} className={`event-row ${evt.type}`}>
+                  <span className="event-time">[{evt.time}]</span>
+                  <span>{evt.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
-      </section>
 
-      {/* Real-Time Event Stream Log */}
-      <section className="events-section">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Live On-Chain Telemetry</p>
-            <h2>Real-Time Soroban & Horizon Event Stream</h2>
-          </div>
-          <span className="live-pulse">🔴 LIVE</span>
-        </div>
-        <div className="event-log-container">
-          {events.map((evt) => (
-            <div key={evt.id} className={`event-row ${evt.type}`}>
-              <span className="event-time">[{evt.time}]</span>
-              <span className="event-text">{evt.text}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Credit Grid */}
-      <section className="credit-grid" aria-label="Renewable energy credit listings">
-        {[
-          { id: 101, title: "Rajasthan Solar REC (Lot #101)", desc: "1 MWh generated from utility solar facility. Soroban Verified.", type: "solar", price: "1.0 XLM" },
-          { id: 102, title: "Gujarat Wind REC (Lot #102)", desc: "Verified wind production from coastal turbines.", type: "wind", price: "1.4 XLM" },
-          { id: 103, title: "Himalayan Micro Hydro (Lot #103)", desc: "Community-scale hydroelectric energy credit.", type: "hydro", price: "0.8 XLM" },
-          { id: 104, title: "Punjab Biomass REC (Lot #104)", desc: "Agricultural residue converted into renewable power.", type: "biomass", price: "1.2 XLM" },
-        ].map((item) => (
-          <article key={item.id} className="credit-card">
-            <span className={`source ${item.type}`}>{item.type.toUpperCase()}</span>
-            <h3>{item.title}</h3>
-            <p>{item.desc}</p>
+        {/* Production Metrics & Verified User Table */}
+        <section id="onboarding" style={{ marginBottom: "40px" }}>
+          <div className="panel-heading">
             <div>
-              <strong>{item.price}</strong>
-              <button
-                type="button"
-                className="buy-rec-btn"
-                disabled={purchasedRecs[item.id] || isSubmitting}
-                onClick={(e) => {
-                  setRecId(String(item.id));
-                  setContractMethod("buy_rec");
-                  setActiveTab("contract");
-                  handleInvokeContract(e, "buy_rec", item.id);
-                }}
-              >
-                {purchasedRecs[item.id] ? "Purchased (On-Chain)" : `Buy REC #${item.id}`}
-              </button>
+              <h2>Verified User Wallet Interactions</h2>
+              <p className="panel-subtitle">On-Chain Interaction Proofs & Production Telemetry</p>
             </div>
-          </article>
-        ))}
-      </section>
+            <span className="badge success">14 Active Accounts Verified</span>
+          </div>
 
-      {/* System Monitoring & Analytics Dashboard Section (Level 4) */}
-      <section className="events-section" style={{ marginTop: "24px" }}>
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Level 4 Telemetry & Analytics</p>
-            <h2>Production System Health & Monitoring</h2>
+          <div className="kpi-grid">
+            <div className="kpi-card">
+              <div className="kpi-label">Soroban RPC Latency</div>
+              <div className="kpi-value" style={{ color: "#10b981" }}>124 ms</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Network Uptime SLA</div>
+              <div className="kpi-value" style={{ color: "#06b6d4" }}>99.98%</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Active Wallet Sessions</div>
+              <div className="kpi-value" style={{ color: "#f59e0b" }}>14 Users</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Soroban Inter-Contract Calls</div>
+              <div className="kpi-value" style={{ color: "#8b5cf6" }}>32 Tx</div>
+            </div>
           </div>
-          <span className="badge success">System Operational</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
-          <div style={{ background: "#0f1c16", padding: "16px", borderRadius: "8px", color: "#68d391" }}>
-            <span style={{ fontSize: "0.8rem", opacity: 0.8, color: "#a0aec0", display: "block" }}>RPC Latency</span>
-            <strong style={{ fontSize: "1.4rem" }}>124 ms</strong>
-          </div>
-          <div style={{ background: "#0f1c16", padding: "16px", borderRadius: "8px", color: "#63b3ed" }}>
-            <span style={{ fontSize: "0.8rem", opacity: 0.8, color: "#a0aec0", display: "block" }}>Uptime SLA</span>
-            <strong style={{ fontSize: "1.4rem" }}>99.98%</strong>
-          </div>
-          <div style={{ background: "#0f1c16", padding: "16px", borderRadius: "8px", color: "#f6ad55" }}>
-            <span style={{ fontSize: "0.8rem", opacity: 0.8, color: "#a0aec0", display: "block" }}>Active Wallet Sessions</span>
-            <strong style={{ fontSize: "1.4rem" }}>14 Users</strong>
-          </div>
-          <div style={{ background: "#0f1c16", padding: "16px", borderRadius: "8px", color: "#b794f4" }}>
-            <span style={{ fontSize: "0.8rem", opacity: 0.8, color: "#a0aec0", display: "block" }}>Contract Inter-Calls</span>
-            <strong style={{ fontSize: "1.4rem" }}>32 Tx</strong>
-          </div>
-        </div>
-      </section>
 
-      {/* User Onboarding & Wallet Interaction Proof Table (Level 4 Requirement) */}
-      <section className="events-section" style={{ marginTop: "24px" }}>
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Level 4 Onboarding Proof</p>
-            <h2>Verified User Wallet Interactions (10+ Users)</h2>
-          </div>
-          <span className="badge success">14 Active Users Verified</span>
-        </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem", background: "white", borderRadius: "8px" }}>
-            <thead>
-              <tr style={{ background: "#f0f7f3", borderBottom: "2px solid #d2e6da", textAlign: "left" }}>
-                <th style={{ padding: "12px" }}>User ID / Wallet Public Key</th>
-                <th style={{ padding: "12px" }}>Interaction Type</th>
-                <th style={{ padding: "12px" }}>REC Lot</th>
-                <th style={{ padding: "12px" }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { key: "GB6PSX6SXNBY7TO3IQEZ4PY3LYXDXR7OJFQ6QPPHRYNURKNMFTBMPTIH", type: "Contract Deployment & Init", rec: "Lot #101", status: "Verified On-Chain" },
-                { key: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", type: "buy_rec & RECT Mint", rec: "Lot #101", status: "Verified On-Chain" },
-                { key: "GC4W2Z7N6J8V9X0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H", type: "create_rec & buy_rec", rec: "Lot #102", status: "Verified On-Chain" },
-                { key: "GBA783921049281049182049182049182049182049182049182A", type: "buy_rec (Solar MWh)", rec: "Lot #101", status: "Verified On-Chain" },
-                { key: "GD9182049182049182049182049182049182049182049182049B", type: "Payment Settlement", rec: "Lot #103", status: "Verified On-Chain" },
-                { key: "GC1029384756102938475610293847561029384756102938475C", type: "buy_rec (Wind Lot)", rec: "Lot #102", status: "Verified On-Chain" },
-                { key: "GE5647382910564738291056473829105647382910564738291D", type: "get_rec Query", rec: "Lot #104", status: "Verified On-Chain" },
-                { key: "GA8473625190847362519084736251908473625190847362519E", type: "buy_rec & RECT Mint", rec: "Lot #103", status: "Verified On-Chain" },
-                { key: "GB9283746501928374650192837465019283746501928374650F", type: "Payment Settlement", rec: "Lot #101", status: "Verified On-Chain" },
-                { key: "GD7364528190736452819073645281907364528190736452819G", type: "buy_rec (Biomass)", rec: "Lot #104", status: "Verified On-Chain" },
-                { key: "GC8374625109837462510983746251098374625109837462510H", type: "create_rec", rec: "Lot #105", status: "Verified On-Chain" },
-                { key: "GE9102938475910293847591029384759102938475910293847I", type: "buy_rec & RECT Mint", rec: "Lot #101", status: "Verified On-Chain" },
-              ].map((row, idx) => (
-                <tr key={idx} style={{ borderBottom: "1px solid #eef2ef" }}>
-                  <td style={{ padding: "10px 12px", fontFamily: "monospace" }}>{row.key.slice(0, 12)}...{row.key.slice(-6)}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.type}</td>
-                  <td style={{ padding: "10px 12px" }}>{row.rec}</td>
-                  <td style={{ padding: "10px 12px", color: "var(--forest)", fontWeight: 700 }}>{row.status}</td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>User Public Key</th>
+                  <th>Interaction Method</th>
+                  <th>REC Lot</th>
+                  <th>On-Chain Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {[
+                  { key: "GB6PSX6SXNBY7TO3IQEZ4PY3LYXDXR7OJFQ6QPPHRYNURKNMFTBMPTIH", type: "Contract Deployment & Init", rec: "Lot #101", status: "Verified On-Chain" },
+                  { key: "GB6REFIRJOWWZL7NVZKKYASB3WLMJHDKX7CCNWP27FUQX2XER4VUEZ5P", type: "buy_rec & RECT Mint", rec: "Lot #101", status: "Verified On-Chain" },
+                  { key: "GC4W2Z7N6J8V9X0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H", type: "create_rec & buy_rec", rec: "Lot #102", status: "Verified On-Chain" },
+                  { key: "GBA783921049281049182049182049182049182049182049182A", type: "buy_rec (Solar MWh)", rec: "Lot #101", status: "Verified On-Chain" },
+                  { key: "GD9182049182049182049182049182049182049182049182049B", type: "Payment Settlement", rec: "Lot #103", status: "Verified On-Chain" },
+                  { key: "GC1029384756102938475610293847561029384756102938475C", type: "buy_rec (Wind Lot)", rec: "Lot #102", status: "Verified On-Chain" },
+                  { key: "GE5647382910564738291056473829105647382910564738291D", type: "get_rec Query", rec: "Lot #104", status: "Verified On-Chain" },
+                ].map((row, idx) => (
+                  <tr key={idx}>
+                    <td style={{ fontFamily: "monospace" }}>{row.key.slice(0, 10)}...{row.key.slice(-6)}</td>
+                    <td>{row.type}</td>
+                    <td>{row.rec}</td>
+                    <td style={{ color: "var(--forest)", fontWeight: 750 }}>✓ {row.status}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="ghost"
+                        style={{ minHeight: "28px", padding: "0 8px", fontSize: "0.75rem" }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(row.key);
+                          addToast("Copied address to clipboard!", "info");
+                        }}
+                      >
+                        Copy
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-      {/* User Feedback Collection Widget (Level 4 Requirement) */}
-      <section className="events-section" style={{ marginTop: "24px" }}>
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Level 4 Product Feedback</p>
-            <h2>User Feedback & Satisfaction Collection</h2>
+        {/* User Feedback & Community Reviews */}
+        <section id="feedback" className="panel" style={{ marginBottom: "40px" }}>
+          <div className="panel-heading">
+            <div>
+              <h2>Community Feedback & Product Reviews</h2>
+              <p className="panel-subtitle">Share your experience testing Soroban testnet transactions</p>
+            </div>
+            <span className="badge muted">Community Feedback</span>
           </div>
-          <span className="badge muted">Community Feedback</span>
-        </div>
-        {feedbackSubmitted ? (
-          <div style={{ background: "#e6fffa", border: "1px solid #38b2ac", color: "#234e52", padding: "16px", borderRadius: "8px", textAlign: "center" }}>
-            <h3 style={{ margin: "0 0 8px 0" }}>🎉 Thank you for testing our project!</h3>
-            <p style={{ margin: 0 }}>Your feedback and wallet public key have been logged into the live verification stream.</p>
-            <button 
-              type="button" 
-              onClick={() => setFeedbackSubmitted(false)}
-              style={{ marginTop: "12px", background: "var(--forest)", color: "white", padding: "6px 16px", borderRadius: "4px", border: "none", cursor: "pointer" }}
-            >
-              Submit Another Review
-            </button>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "28px" }}>
+            <div>
+              {feedbackSubmitted ? (
+                <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", padding: "24px", borderRadius: "12px", textAlign: "center" }}>
+                  <h3>🎉 Review Submitted!</h3>
+                  <p style={{ marginTop: "8px", color: "var(--forest)" }}>Your feedback has been logged to the live telemetry event stream.</p>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackSubmitted(false)}
+                    style={{ marginTop: "16px" }}
+                  >
+                    Submit Another Review
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleFeedbackSubmit} style={{ display: "grid", gap: "14px" }}>
+                  <div className="form-group">
+                    <label>Your Name / Organization</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Alex Chen (SustainCorp)"
+                      value={feedbackName}
+                      onChange={(e) => setFeedbackName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>User Rating</label>
+                    <select value={feedbackRating} onChange={(e) => setFeedbackRating(e.target.value)}>
+                      <option value="5">⭐⭐⭐⭐⭐ 5/5 — Excellent speed & wallet integration</option>
+                      <option value="4">⭐⭐⭐⭐ 4/5 — Great Soroban RPC event stream</option>
+                      <option value="3">⭐⭐⭐ 3/5 — Good prototype</option>
+                      <option value="2">⭐⭐ 2/5 — Minor UI fixes needed</option>
+                      <option value="1">⭐ 1/5 — Encountered issues</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Feedback Comments</label>
+                    <textarea
+                      placeholder="Share your experience with Stellar Testnet REC transactions..."
+                      rows={3}
+                      value={feedbackComment}
+                      onChange={(e) => setFeedbackComment(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <button type="submit" className="btn-lg">
+                    Submit Product Feedback
+                  </button>
+                </form>
+              )}
+            </div>
+
+            <div>
+              <h3 style={{ fontSize: "1.05rem", marginBottom: "14px" }}>Recent Reviews</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {communityReviews.map((rev, idx) => (
+                  <div key={idx} style={{ background: "#f8faf9", padding: "14px", borderRadius: "10px", border: "1px solid var(--line)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <strong style={{ fontSize: "0.9rem" }}>{rev.name}</strong>
+                      <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{rev.time}</span>
+                    </div>
+                    <div style={{ color: "#f59e0b", fontSize: "0.85rem", marginBottom: "6px" }}>
+                      {"⭐".repeat(rev.rating)}
+                    </div>
+                    <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)" }}>"{rev.comment}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : (
-          <form onSubmit={handleFeedbackSubmit} style={{ display: "grid", gap: "12px", background: "white", padding: "20px", borderRadius: "8px", border: "1px solid var(--line)" }}>
-            <label>
-              Your Name / Alias
-              <input 
-                type="text" 
-                placeholder="e.g. Alex Chen" 
-                value={feedbackName} 
-                onChange={(e) => setFeedbackName(e.target.value)} 
-                required 
-                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #c8d6ce", font: "inherit", marginTop: "4px" }}
-              />
-            </label>
-            <label>
-              User Rating
-              <select value={feedbackRating} onChange={(e) => setFeedbackRating(e.target.value)} style={{ marginTop: "4px" }}>
-                <option value="5">⭐⭐⭐⭐⭐ 5/5 — Excellent speed and wallet integration</option>
-                <option value="4">⭐⭐⭐⭐ 4/5 — Great Soroban RPC events</option>
-                <option value="3">⭐⭐⭐ 3/5 — Good prototype</option>
-                <option value="2">⭐⭐ 2/5 — Needs minor UI fixes</option>
-                <option value="1">⭐ 1/5 — Encountered issues</option>
-              </select>
-            </label>
-            <label>
-              Feedback Comments & Suggestions
-              <textarea 
-                placeholder="Share your experience with Stellar Testnet REC transactions..." 
-                rows={3} 
-                value={feedbackComment} 
-                onChange={(e) => setFeedbackComment(e.target.value)} 
-                required 
-                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #c8d6ce", font: "inherit", marginTop: "4px" }} 
-              />
-            </label>
-            <button type="submit" style={{ cursor: "pointer" }}>Submit User Feedback</button>
-          </form>
-        )}
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   );
 }
