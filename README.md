@@ -9,12 +9,17 @@ The transition toward renewable energy requires a transparent and trustworthy sy
 
 Traditional credit marketplaces can face challenges such as:
 
-❌ Limited transparency
+❌ Limited transparency                                                                                                                                                                                                       
 ❌ Complex intermediaries
+
 ❌ High transaction friction
+
 ❌ Difficult verification
+
 ❌ Poor accessibility for smaller participants
+
 ❌ Lack of real-time transaction visibility
+
 💡 Our Solution
 
 REC Marketplace uses Stellar and Soroban to create a decentralized marketplace where renewable energy credits can be created and purchased through smart contracts.
