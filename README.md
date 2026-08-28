@@ -25,28 +25,22 @@ Traditional credit marketplaces can face challenges such as:
 
 REC Marketplace uses Stellar and Soroban to create a decentralized marketplace where renewable energy credits can be created and purchased through smart contracts.
 
-Renewable Energy Producer
-            │              
-            ▼ 
-   Create REC On-Chain 
-            │ 
-            ▼
- REC Marketplace Contract 
-            │ 
-            ▼
-    Buyer Purchase 
-            │ 
-            ├──────────────► Gasless Fee Sponsorship 
-                                       │  
-                                       ▼ 
-                           Soroban Inter-Contract Call 
-                                       │ 
-                                       ▼
-                           Mint 10 RECT Reward Tokens 
-                                       │ 
-                                       ▼ 
-                           Transparent On-Chain Record
+flowchart TD
 
+    A[🌱 Renewable Energy Producer]
+        --> B[⚡ Create REC On-Chain]
+
+    B --> C[🏪 REC Marketplace Contract]
+
+    C --> D[🛒 Buyer Purchase]
+
+    D --> E[⛽ Gasless Fee Sponsorship]
+
+    D --> F[🔗 Soroban Inter-Contract Call]
+
+    F --> G[🪙 Mint 10 RECT Reward Tokens]
+
+    G --> H[📜 Transparent On-Chain Record]
 ## Live Production Links & Verification
 
 | Resource | Link 🔗
