@@ -1801,8 +1801,23 @@ export default function App() {
               </div>
             ) : null}
 
-            <div style={{ marginTop: "16px", padding: "14px", borderRadius: "8px", border: "1px solid var(--line)", background: "#f8faf9", fontSize: "0.88rem" }}>
+            <div style={{ marginTop: "16px", padding: "14px", borderRadius: "8px", border: "1px solid var(--line)", background: txFeedback.type === "error" ? "#fef2f2" : "#f8faf9", color: txFeedback.type === "error" ? "#991b1b" : "var(--ink)", fontSize: "0.88rem" }}>
               <div>{txFeedback.message}</div>
+              {(txFeedback.message?.includes("MissingValue") || txFeedback.message?.includes("non-existing value")) && (
+                <div style={{ marginTop: "12px" }}>
+                  <button
+                    type="button"
+                    className="btn-lg"
+                    style={{ minHeight: "42px", fontSize: "0.88rem" }}
+                    onClick={(e) => {
+                      setContractMethod("create_rec");
+                      handleInvokeContract(e, "create_rec", recId);
+                    }}
+                  >
+                    ✨ Mint REC Lot #{recId} On-Chain First
+                  </button>
+                </div>
+              )}
               {txFeedback.htmlUrl && (
                 <div style={{ marginTop: "6px" }}>
                   <a href={txFeedback.htmlUrl} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>
