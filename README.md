@@ -30,32 +30,55 @@ flowchart TD
   # ⚡ How REC Marketplace Works
 
 The following workflow demonstrates how Renewable Energy Credits are created, purchased, rewarded, and recorded on the Stellar blockchain.
+┌──────────────────────────────┐
+│ 🌱 Renewable Energy Producer │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│ ⚡ Create Renewable Energy   │
+│           Credit             │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│ 🏪 REC Marketplace Smart     │
+│          Contract            │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│ 🛒 Buyer Purchases REC       │
+└──────────┬───────────┬───────┘
+           │           │
+           │           └──────────────────────┐
+           ▼                                  ▼
+┌──────────────────────┐       ┌──────────────────────────┐
+│ ⛽ Gasless Fee        │       │ 🔗 Soroban Inter-Contract │
+│    Sponsorship        │       │      Communication        │
+└──────────┬───────────┘       └─────────────┬────────────┘
+           │                                 │
+           │                                 ▼
+           │                    ┌──────────────────────────┐
+           │                    │ 🪙 RECT Reward Token      │
+           │                    │        Contract          │
+           │                    └─────────────┬────────────┘
+           │                                  │
+           │                                  ▼
+           │                    ┌──────────────────────────┐
+           │                    │ 🎁 Mint 10 RECT Tokens    │
+           │                    └─────────────┬────────────┘
+           │                                  │
+           └───────────────┬──────────────────┘
+                           ▼
+              ┌──────────────────────────────┐
+              │ 📜 Transparent On-Chain      │
+              │      Transaction Record      │
+              └──────────────────────────────┘
 
-```mermaid
-flowchart TD
 
-    A[Renewable Energy Producer]
-    B[Create Renewable Energy Credit]
-    C[REC Marketplace Smart Contract]
-    D[Buyer Purchases REC]
-    E[Gasless Fee Sponsorship]
-    F[Soroban Inter-Contract Communication]
-    G[RECT Reward Token Contract]
-    H[Mint 10 RECT Tokens]
-    I[Transparent On-Chain Transaction Record]
 
-    A --> B
-    B --> C
-    C --> D
 
-    D --> E
-    D --> F
-
-    F --> G
-    G --> H
-
-    H --> I
-    E --> I
 ## Live Production Links & Verification
 
 | Resource | Link 🔗
