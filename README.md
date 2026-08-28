@@ -1,12 +1,49 @@
-# Renewable Energy Credit Marketplace
+#🌱 Renewable Energy Credit Marketplace
 
 An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on **Stellar Mainnet & Testnet** and **Soroban Smart Contracts**, featuring **Gasless Fee Sponsorship (SEP Fee-Bump)**, inter-contract communication, real-time event streaming, security audit reports, community technical tutorials, verified 50+ user onboarding proof, pitch deck, CI/CD, and a React + Vite mobile-responsive frontend.
 
 ---
+🌍 The Problem
+
+The transition toward renewable energy requires a transparent and trustworthy system for tracking renewable energy generation and trading Renewable Energy Credits (RECs).
+
+Traditional credit marketplaces can face challenges such as:
+
+❌ Limited transparency
+❌ Complex intermediaries
+❌ High transaction friction
+❌ Difficult verification
+❌ Poor accessibility for smaller participants
+❌ Lack of real-time transaction visibility
+💡 Our Solution
+
+REC Marketplace uses Stellar and Soroban to create a decentralized marketplace where renewable energy credits can be created and purchased through smart contracts.
+
+Renewable Energy Producer
+            │              
+            ▼ 
+   Create REC On-Chain 
+            │ 
+            ▼
+ REC Marketplace Contract 
+            │ 
+            ▼
+    Buyer Purchase 
+            │ 
+            ├──────────────► Gasless Fee Sponsorship 
+                                       │  
+                                       ▼ 
+                           Soroban Inter-Contract Call 
+                                       │ 
+                                       ▼
+                           Mint 10 RECT Reward Tokens 
+                                       │ 
+                                       ▼ 
+                           Transparent On-Chain Record
 
 ## Live Production Links & Verification
 
-| Resource | Link |
+| Resource | Link 🔗
 |---|---|
 | **Live Mainnet/Testnet Application (Vercel)** | [https://rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
 | **GitHub Pages Live Deployment** | [https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/](https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/) |
@@ -23,9 +60,7 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 
 ---
 
-## Level 6 & Black Belt Submission Checklist
-
-### Required Level 6 Criteria
+## Submission Checklist
 - [x] **Public GitHub repository** — [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace)
 - [x] **Minimum 30+ meaningful commits** (50+ commits in git history)
 - [x] **Live mainnet / testnet application** — [Vercel Deployment](https://rec-marketplace-three.vercel.app)
@@ -43,6 +78,40 @@ An end-to-end decentralized Renewable Energy Credit (REC) marketplace built on *
 - [x] **Fee Sponsorship (Gasless Transactions)** — Implemented Stellar **Fee-Bump Transactions (SEP Fee Sponsorship)** allowing sponsored zero-gas execution for credit buyers (toggable in React UI & documented in [`src/App.jsx`](./src/App.jsx)).
 
 ---
+✨ Why This Project Is Different
+
+||⚡ Gasless Experience
+
+Buy renewable energy credits without requiring users to manually pay transaction fees through Stellar Fee-Bump sponsorship.
+
+||🔗 Inter-Contract Communication
+
+The marketplace contract communicates with the RECT Reward Token Contract to automatically reward buyers.
+
+||📡 Real-Time Blockchain Events
+
+Live polling of Soroban contract events keeps users informed about marketplace activity.
+
+||👛 Multi-Wallet Support
+
+Supports Freighter Wallet along with a fallback web wallet for easier onboarding and testing.
+
+||🛡️ Security Documentation
+
+Includes a dedicated threat model and security review report.
+
+||🧪 Full Development Pipeline
+
+Frontend tests, Soroban contract tests, automated CI/CD, and deployment tooling.
+
+🌱 Renewable Energy Credit Marketplace App View : <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/4ea11e7f-9b1a-4d39-b4ea-ff131b328333" />
+                                                   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/184723c0-8067-4366-acd4-3024c9856deb" />
+                                                   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/00b37fb2-31cd-4f89-8193-bf5f1cbca540" />
+                                                   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/0f3f04ca-63a4-443f-bb9e-8c0f1a84dfe4" />
+                                                   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5a57551a-11ae-4ab1-a723-d8399ab62e8b" />
+
+
+
 
 ## User Feedback Iteration & Project Evolution Roadmap
 
