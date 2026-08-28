@@ -4,163 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>REC Marketplace | Stellar Testnet</title>
-    <link rel="preconnect" href="https://esm.sh" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="app-shell">
       <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Stellar Testnet</p>
-          <h1>Renewable Energy Credit Marketplace</h1>
-          <p>
-            Connect Freighter, inspect your XLM balance, and send a testnet
-            payment that simulates purchasing renewable energy credits.
-          </p>
-        </div>
-        <div class="market-stats" aria-label="Marketplace summary">
+        <div class="hero-card">
           <div>
-            <span class="stat-value">4</span>
-            <span class="stat-label">REC lots</span>
-          </div>
-          <div>
-            <span class="stat-value">Testnet</span>
-            <span class="stat-label">Network</span>
-          </div>
-          <div>
-            <span class="stat-value">XLM</span>
-            <span class="stat-label">Settlement</span>
+            <div class="hero-eyebrow">Stellar Testnet</div>
+            <h1>Renewable Energy Credit Marketplace</h1>
+            <p className="hero-desc">
+              Connect Freighter, inspect your XLM balance, and send a testnet
+              payment that simulates purchasing renewable energy credits.
+            </p>
           </div>
         </div>
-      </section>
-
-      <section class="dashboard">
-        <aside class="wallet-panel" aria-label="Wallet controls">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Wallet</p>
-              <h2>Freighter connection</h2>
-            </div>
-            <span id="connectionBadge" class="badge muted">Disconnected</span>
-          </div>
-
-          <div id="walletAddress" class="address-box">No wallet connected</div>
-
-          <div class="wallet-actions">
-            <button id="connectBtn" type="button">Connect Freighter</button>
-            <button id="disconnectBtn" class="secondary" type="button" disabled>
-              Disconnect
-            </button>
-          </div>
-
-          <div class="balance-box">
-            <span>XLM balance</span>
-            <strong id="balanceValue">--</strong>
-          </div>
-
-          <button id="refreshBalanceBtn" class="ghost" type="button" disabled>
-            Refresh balance
-          </button>
-
-          <p id="walletMessage" class="message" role="status"></p>
-
-          <div class="setup-box">
-            <strong>Wallet setup checklist</strong>
-            <a href="https://www.freighter.app/" target="_blank" rel="noreferrer">
-              Install Freighter
-            </a>
-            <span>Open this app in the same Chrome, Brave, or Edge profile.</span>
-            <span>Switch Freighter network to Testnet.</span>
-            <a
-              href="https://laboratory.stellar.org/#account-creator?network=test"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Fund your testnet account
-            </a>
-          </div>
-        </aside>
-
-        <section class="transaction-panel" aria-label="REC purchase transaction">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Transaction flow</p>
-              <h2>Send testnet XLM</h2>
-            </div>
-          </div>
-
-          <form id="paymentForm">
-            <label>
-              Destination address
-              <input
-                id="destinationInput"
-                name="destination"
-                autocomplete="off"
-                placeholder="G..."
-                required
-              />
-            </label>
-
-            <label>
-              Amount in XLM
-              <input
-                id="amountInput"
-                name="amount"
-                inputmode="decimal"
-                min="0.0000001"
-                step="0.0000001"
-                value="1"
-                required
-              />
-            </label>
-
-            <label>
-              Memo
-              <input
-                id="memoInput"
-                name="memo"
-                maxlength="28"
-                value="REC marketplace purchase"
-              />
-            </label>
-
-            <button id="sendBtn" type="submit" disabled>Send XLM on Testnet</button>
-          </form>
-
-          <div id="txFeedback" class="tx-feedback idle">
-            Connect Freighter to begin a testnet transaction.
-          </div>
-        </section>
-      </section>
-
-      <section class="credit-grid" aria-label="Renewable energy credit listings">
-        <article class="credit-card">
-          <span class="source solar">Solar</span>
-          <h3>Rajasthan Solar REC</h3>
-          <p>1 MWh generated from a utility solar facility.</p>
-          <div><strong>1.0 XLM</strong><span>Available now</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source wind">Wind</span>
-          <h3>Gujarat Wind REC</h3>
-          <p>Verified wind production from coastal turbines.</p>
-          <div><strong>1.4 XLM</strong><span>Limited lot</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source hydro">Hydro</span>
-          <h3>Himalayan Micro Hydro</h3>
-          <p>Community-scale hydroelectric energy credit.</p>
-          <div><strong>0.8 XLM</strong><span>Best value</span></div>
-        </article>
-        <article class="credit-card">
-          <span class="source biomass">Bio</span>
-          <h3>Punjab Biomass REC</h3>
-          <p>Agricultural residue converted into renewable power.</p>
-          <div><strong>1.2 XLM</strong><span>New listing</span></div>
-        </article>
       </section>
     </main>
-
     <script type="module" src="./main.js"></script>
   </body>
 </html>

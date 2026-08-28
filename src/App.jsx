@@ -104,9 +104,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Interactive Features State
-  const [selectedRecModal, setSelectedRecModal] = useState(null); // Active REC for Impact Calculator Modal
+  const [selectedRecModal, setSelectedRecModal] = useState(null);
   const [calcMwh, setCalcMwh] = useState(50);
-  const [selectedCertModal, setSelectedCertModal] = useState(null); // Active Digital Certificate Modal
+  const [selectedCertModal, setSelectedCertModal] = useState(null);
   
   // Net Zero ESG Simulator State
   const [esgUsageMwh, setEsgUsageMwh] = useState(120);
@@ -680,7 +680,7 @@ export default function App() {
     }
   };
 
-  // REC Listings Dataset
+  // REC Listings Dataset with HD Images
   const recListings = [
     {
       id: 101,
@@ -693,6 +693,7 @@ export default function App() {
       baseUsd: 0.12,
       price: "1.0 XLM",
       usdEst: "$0.12 USD",
+      image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80",
     },
     {
       id: 102,
@@ -705,6 +706,7 @@ export default function App() {
       baseUsd: 0.17,
       price: "1.4 XLM",
       usdEst: "$0.17 USD",
+      image: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=800&q=80",
     },
     {
       id: 103,
@@ -717,6 +719,7 @@ export default function App() {
       baseUsd: 0.10,
       price: "0.8 XLM",
       usdEst: "$0.10 USD",
+      image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
     },
     {
       id: 104,
@@ -729,6 +732,7 @@ export default function App() {
       baseUsd: 0.14,
       price: "1.2 XLM",
       usdEst: "$0.14 USD",
+      image: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80",
     },
   ];
 
@@ -773,11 +777,14 @@ export default function App() {
               ✕
             </button>
 
-            <div className="credit-card-top" style={{ marginBottom: "8px" }}>
-              <span className={`source-tag ${selectedRecModal.type}`}>
-                {selectedRecModal.type.toUpperCase()}
-              </span>
-              <span className="verified-pill">✓ Soroban Verified</span>
+            <div className="card-image-wrap" style={{ height: "180px", margin: "-32px -32px 20px -32px", width: "calc(100% + 64px)" }}>
+              <img src={selectedRecModal.image} alt={selectedRecModal.title} />
+              <div className="card-image-overlay">
+                <span className={`source-tag ${selectedRecModal.type}`}>
+                  {selectedRecModal.type.toUpperCase()}
+                </span>
+                <span className="verified-pill">✓ Soroban Verified</span>
+              </div>
             </div>
 
             <h2 style={{ fontSize: "1.5rem", marginBottom: "8px" }}>{selectedRecModal.title}</h2>
@@ -1103,8 +1110,9 @@ export default function App() {
           <div className="credit-grid">
             {filteredRecs.map((item) => (
               <article key={item.id} className="credit-card">
-                <div>
-                  <div className="credit-card-top">
+                <div className="card-image-wrap">
+                  <img src={item.image} alt={item.title} />
+                  <div className="card-image-overlay">
                     <span className={`source-tag ${item.type}`}>
                       {item.type === "solar"
                         ? "☀️ Solar"
@@ -1116,6 +1124,9 @@ export default function App() {
                     </span>
                     <span className="verified-pill">✓ Soroban Verified</span>
                   </div>
+                </div>
+
+                <div>
                   <h3>{item.title}</h3>
                   <p>{item.desc}</p>
 
