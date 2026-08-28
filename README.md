@@ -34,18 +34,21 @@ The platform solves greenwashing, double-counting, and settlement delays in rene
 
 ## 🖼️ Application UI Showcase & Verification Screenshots
 
-### 📱 Mobile Responsive Viewport Layout
-<img src="./screens/mobile.png" width="350" alt="Mobile UI Viewport" />
-
----
-
-### 🧪 Automated Test Suite Execution (8/8 Unit Tests Passed)
-<img src="./screens/tests.png" width="100%" alt="Unit Test Results" />
-
----
-
-### ⚙️ CI/CD Pipeline Verification (GitHub Actions Workflow)
-<img src="./screens/ci.png" width="100%" alt="CI/CD Status" />
+<table>
+  <tr>
+    <td width="35%" valign="top">
+      <h3>📱 Mobile UI Viewport</h3>
+      <img src="./screens/mobile.png" width="100%" alt="Mobile UI Viewport" />
+    </td>
+    <td width="65%" valign="top">
+      <h3>🧪 Automated Test Suite Execution</h3>
+      <img src="./screens/tests.png" width="100%" alt="Unit Test Results" />
+      <hr />
+      <h3>⚙️ CI/CD Pipeline Verification</h3>
+      <img src="./screens/ci.png" width="100%" alt="CI/CD Status" />
+    </td>
+  </tr>
+</table>
 
 ---
 
