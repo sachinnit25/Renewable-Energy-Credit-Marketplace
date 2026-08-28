@@ -36,38 +36,39 @@ The platform solves greenwashing, double-counting, and settlement delays in rene
 
 ```mermaid
 flowchart TB
-  subgraph ClientLayer ["💻 Client Layer (React 19 + Vite)"]
-    UI["📱 Glassmorphic UI Dashboard"]
-    Freighter["🔑 Freighter Wallet Extension"]
-    WebWallet["🔑 Stellar Web Keypair (Fallback)"]
-    ESGSim["🧮 ESG Impact Calculator Modal"]
-    EscrowUI["🔒 7-Step Escrow Stepper Widget"]
+  subgraph ClientLayer ["Client Layer (React 19 + Vite)"]
+    UI["Glassmorphic UI Dashboard"]
+    Freighter["Freighter Wallet Extension"]
+    WebWallet["Stellar Web Keypair (Fallback)"]
+    ESGSim["ESG Impact Calculator Modal"]
+    EscrowUI["7-Step Escrow Stepper Widget"]
   end
 
-  subgraph NetworkLayer ["📡 Stellar Network Layer"]
+  subgraph NetworkLayer ["Stellar Network Layer"]
     RPCServer["RPC Server (soroban-testnet.stellar.org)"]
     HorizonServer["Horizon Server (horizon-testnet.stellar.org)"]
-    Friendbot["💰 Friendbot Funder API"]
+    Friendbot["Friendbot Funder API"]
   end
 
-  subgraph SmartContractLayer ["⚙️ Soroban Smart Contract Layer (Rust / WASM)"]
-    MarketplaceContract["📜 RecMarketplaceContract\n(CA7CH4OA...)"]
-    RewardContract["💎 RewardTokenContract\n(CAUZHVNR...)"]
-    StorageVault["💾 Persistent Storage Vault\n(REC Lots + Escrows)"]
+  subgraph SmartContractLayer ["Soroban Smart Contract Layer (Rust / WASM)"]
+    MarketplaceContract["RecMarketplaceContract (CA7CH4OA...)"]
+    RewardContract["RewardTokenContract (CAUZHVNR...)"]
+    StorageVault["Persistent Storage Vault (REC Lots + Escrows)"]
   end
 
-  UI -->|Sign Tx| Freighter
-  UI -->|Local Sign| WebWallet
-  WebWallet -->|Request XLM| Friendbot
+  UI -->|"Sign Tx"| Freighter
+  UI -->|"Local Sign"| WebWallet
+  WebWallet -->|"Request XLM"| Friendbot
   
-  Freighter & WebWallet -->|Submit Tx / RPC Call| RPCServer
-  UI -->|Direct XLM Payments| HorizonServer
+  Freighter -->|"Submit Tx / RPC Call"| RPCServer
+  WebWallet -->|"Submit Tx / RPC Call"| RPCServer
+  UI -->|"Direct XLM Payments"| HorizonServer
   
-  RPCServer -->|Execute Function| MarketplaceContract
-  MarketplaceContract -->|Inter-Contract Call: mint()| RewardContract
-  MarketplaceContract <-->|Read / Write Storage| StorageVault
+  RPCServer -->|"Execute Function"| MarketplaceContract
+  MarketplaceContract -->|"Inter-Contract Call: mint"| RewardContract
+  MarketplaceContract <-->|"Read / Write Storage"| StorageVault
   
-  RPCServer -->|Poll getEvents()| UI
+  RPCServer -->|"Poll getEvents"| UI
 ```
 
 ---
@@ -77,13 +78,13 @@ flowchart TB
 ```mermaid
 sequenceDiagram
   autonumber
-  actor Seller as 👨‍🌾 Energy Seller
-  actor Buyer as 🏢 Corporate Buyer
-  participant Soroban as ⚙️ Soroban Smart Contract
-  participant Vault as 🔒 Escrow Vault
-  participant RECT as 💎 RECT Reward Token
+  actor Seller as Energy Seller
+  actor Buyer as Corporate Buyer
+  participant Soroban as Soroban Smart Contract
+  participant Vault as Escrow Vault
+  participant RECT as RECT Reward Token
 
-  Seller->>Soroban: 1. create_rec(id=101, mwh=50, price=1.0 XLM, source="solar")
+  Seller->>Soroban: 1. create_rec(id=101, mwh=50, price=1.0 XLM, source=solar)
   Soroban->>Vault: Store REC Lot #101 (Status: LISTED)
   
   Buyer->>Soroban: 2. Submit Buy Offer / Reserve Intent
@@ -101,9 +102,9 @@ sequenceDiagram
   Buyer->>Soroban: 6. Confirm Receipt
   Soroban->>Vault: Update Status: CONFIRMED
   
-  Soroban->>Seller: 7. 💸 Auto-Release Locked XLM Funds to Seller
-  Soroban->>RECT: 8. 💎 Inter-Contract Mint 10 RECT Reward Tokens to Buyer
-  Soroban->>Vault: 9. ⭐ Update Seller Reputation (+1 Trade) & Generate Certificate 📜
+  Soroban->>Seller: 7. Auto-Release Locked XLM Funds to Seller
+  Soroban->>RECT: 8. Inter-Contract Mint 10 RECT Reward Tokens to Buyer
+  Soroban->>Vault: 9. Update Seller Reputation (+1 Trade) & Generate Certificate
 ```
 
 ---
@@ -113,19 +114,19 @@ sequenceDiagram
 ```mermaid
 flowchart LR
   subgraph Step1 ["Step 1: Buyer Action"]
-    A["🏢 Buyer executes buy_rec(buyer_address, rec_id=101)"]
+    A["Buyer executes buy_rec"]
   end
 
   subgraph Step2 ["Step 2: Marketplace Smart Contract"]
-    B["📜 RecMarketplaceContract verifies payment & ownership transfer"]
+    B["RecMarketplaceContract verifies payment and ownership"]
   end
 
   subgraph Step3 ["Step 3: Inter-Contract Cross Call"]
-    C["⚙️ Marketplace invokes RewardTokenContract.mint(buyer_address, 10_000_000)"]
+    C["Marketplace invokes RewardTokenContract.mint"]
   end
 
   subgraph Step4 ["Step 4: Reward Token Execution"]
-    D["💎 RewardTokenContract mints 10 RECT Tokens directly to Buyer Wallet"]
+    D["RewardTokenContract mints 10 RECT Tokens to Buyer"]
   end
 
   A --> B --> C --> D
@@ -137,12 +138,12 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  Input["⚡ Selected Energy Volume (MWh)"] --> Converter{"🧮 Impact Math Matrix"}
+  Input["Selected Energy Volume MWh"] --> Converter["Impact Math Matrix"]
   
-  Converter -->|MWh × 16| Trees["🌲 Trees Planted Equivalent"]
-  Converter -->|MWh × 0.22| Cars["🚗 Passenger Cars Removed / Yr"]
-  Converter -->|MWh × 1.1| Homes["🏠 Homes Powered / Month"]
-  Converter -->|MWh × 0.85 t| Carbon["☁️ Metric Tons CO₂ Offset"]
+  Converter -->|"MWh x 16"| Trees["Trees Planted Equivalent"]
+  Converter -->|"MWh x 0.22"| Cars["Passenger Cars Removed / Yr"]
+  Converter -->|"MWh x 1.1"| Homes["Homes Powered / Month"]
+  Converter -->|"MWh x 0.85 t"| Carbon["Metric Tons CO2 Offset"]
 ```
 
 ---
