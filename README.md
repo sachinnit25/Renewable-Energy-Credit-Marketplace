@@ -27,20 +27,35 @@ REC Marketplace uses Stellar and Soroban to create a decentralized marketplace w
 
 flowchart TD
 
-    A[🌱 Renewable Energy Producer]
-        --> B[⚡ Create REC On-Chain]
+  # ⚡ How REC Marketplace Works
 
-    B --> C[🏪 REC Marketplace Contract]
+The following workflow demonstrates how Renewable Energy Credits are created, purchased, rewarded, and recorded on the Stellar blockchain.
 
-    C --> D[🛒 Buyer Purchase]
+```mermaid
+flowchart TD
 
-    D --> E[⛽ Gasless Fee Sponsorship]
+    A[Renewable Energy Producer]
+    B[Create Renewable Energy Credit]
+    C[REC Marketplace Smart Contract]
+    D[Buyer Purchases REC]
+    E[Gasless Fee Sponsorship]
+    F[Soroban Inter-Contract Communication]
+    G[RECT Reward Token Contract]
+    H[Mint 10 RECT Tokens]
+    I[Transparent On-Chain Transaction Record]
 
-    D --> F[🔗 Soroban Inter-Contract Call]
+    A --> B
+    B --> C
+    C --> D
 
-    F --> G[🪙 Mint 10 RECT Reward Tokens]
+    D --> E
+    D --> F
 
-    G --> H[📜 Transparent On-Chain Record]
+    F --> G
+    G --> H
+
+    H --> I
+    E --> I
 ## Live Production Links & Verification
 
 | Resource | Link 🔗
