@@ -30,33 +30,33 @@ flowchart TD
   # ⚡ How REC Marketplace Works
 
 The following workflow demonstrates how Renewable Energy Credits are created, purchased, rewarded, and recorded on the Stellar blockchain.
-┌──────────────────────────────┐
-│ 🌱 Renewable Energy Producer │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ ⚡ Create Renewable Energy   │
-│           Credit             │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ 🏪 REC Marketplace Smart     │
-│          Contract            │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ 🛒 Buyer Purchases REC       │
-└──────────┬───────────┬───────┘
-           │           │
-           │           └──────────────────────┐
-           ▼                                  ▼
-┌──────────────────────┐       ┌──────────────────────────┐
-│ ⛽ Gasless Fee        │       │ 🔗 Soroban Inter-Contract │
-│    Sponsorship        │       │      Communication        │
-└──────────┬───────────┘       └─────────────┬────────────┘
+                                                               ┌──────────────────────────────┐
+                                                               │ 🌱 Renewable Energy Producer │
+                                                               └──────────────┬───────────────┘
+                                                                              │
+                                                                              ▼ 
+                                                               ┌──────────────────────────────┐
+                                                               │ ⚡ Create Renewable Energy   │
+                                                               │           Credit             │
+                                                               └──────────────┬───────────────┘
+                                                                              │             
+                                                                              ▼
+                                                               ┌──────────────────────────────┐
+                                                               │ 🏪 REC Marketplace Smart     │
+                                                               │          Contract            │
+                                                               └──────────────┬───────────────┘
+                                                                              │
+                                                                              ▼
+                                                               ┌──────────────────────────────┐
+                                                               │ 🛒 Buyer Purchases REC       │
+                                                               └──────────┬───────────┬───────┘
+                                                                          │           │
+                                                                          │           └──────────────────────┐
+                                                                          ▼                                  ▼
+                                                                ┌──────────────────────┐       ┌──────────────────────────┐
+                                                                │ ⛽ Gasless Fee       │      │ 🔗 Soroban Inter-Contract│
+                                                                │    Sponsorship        │      │      Communication       │
+                                                                └──────────┬───────────┘       └─────────────┬────────────┘
            │                                 │
            │                                 ▼
            │                    ┌──────────────────────────┐
