@@ -15,6 +15,7 @@
     "ci": "npm test && npm run test:contracts && cargo build --manifest-path contracts/soroban_rec/Cargo.toml --target wasm32-unknown-unknown --release && npm run build",
     "deploy:contract": "node scripts/deploy_soroban.mjs",
     "interact:contract": "node scripts/interact_contract.mjs",
+    "seed:recs": "node scripts/seed_marketplace_recs.mjs",
     "capture-screenshots": "node scripts/capture-screenshots.mjs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

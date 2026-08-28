@@ -9,6 +9,7 @@
   "deployer": "GCQC4MKV2CSKKXAWDDKKMMCZL353XK567MXK3TQ4BA6RRML4OV5DJLWM",
   "uploadTxHash": "4d9eabd4551d7d3695bd633fd6d3b0f850b612d7551c82a50900b6c7bddbd343",
   "initializeTxHash": "485067ac1009b8838888b54dabcb6a79a9e65e4032a4206ce94dfe1ba1eb364c",
-  "interactionTxHash": "485067ac1009b8838888b54dabcb6a79a9e65e4032a4206ce94dfe1ba1eb364c",
-  "deployedAt": "2026-08-19T14:08:49.500Z"
+  "interactionTxHash": "38ca9550d7af7956be170e39c7f87a96e471ab1a97e66aea55ec44fe73e4a23b",
+  "deployedAt": "2026-08-19T14:08:49.500Z",
+  "lastInteractionAt": "2026-08-28T11:50:14.719Z"
 }
