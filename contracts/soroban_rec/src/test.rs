@@ -92,3 +92,44 @@ fn test_get_rec_count_increments() {
     marketplace.create_rec(&admin, &502, &5, &1_000_000, &symbol_short!("bio"));
     assert_eq!(marketplace.get_rec_count(), 2);
 }
+
+#[test]
+fn test_create_and_release_escrow() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (_, _, marketplace, _) = setup_marketplace(&env);
+    let buyer = Address::generate(&env);
+    let seller = Address::generate(&env);
+
+    assert!(marketplace.create_escrow(&buyer, &seller, &1001, &50_000_000, &100));
+
+    let escrow = marketplace.get_escrow(&1001).unwrap();
+    assert_eq!(escrow.id, 1001);
+    assert_eq!(escrow.buyer, buyer);
+    assert_eq!(escrow.seller, seller);
+    assert_eq!(escrow.is_completed, false);
+
+    assert!(marketplace.release_escrow(&buyer, &1001));
+
+    let escrow_after = marketplace.get_escrow(&1001).unwrap();
+    assert!(escrow_after.is_completed);
+}
+
+#[test]
+fn test_escrow_refund_by_seller() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let (_, _, marketplace, _) = setup_marketplace(&env);
+    let buyer = Address::generate(&env);
+    let seller = Address::generate(&env);
+
+    marketplace.create_escrow(&buyer, &seller, &1002, &30_000_000, &500);
+
+    // Seller can refund early
+    assert!(marketplace.refund_escrow(&seller, &1002));
+
+    let escrow = marketplace.get_escrow(&1002).unwrap();
+    assert!(escrow.is_refunded);
+}
