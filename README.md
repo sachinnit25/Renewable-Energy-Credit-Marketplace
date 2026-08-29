@@ -1,5 +1,6 @@
 # ⚡ Decentralized Renewable Energy Credit (REC) Marketplace
 
+[![Level 7](https://img.shields.io/badge/Level_7-Founder_Belt-FFD700?style=for-the-badge&logo=stellar&logoColor=black)](./FOUNDER_BELT_REPORT.md)
 [![Stellar](https://img.shields.io/badge/Stellar-Mainnet%20%26%20Testnet-08B5E5?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
 [![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-7C3AED?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
@@ -12,23 +13,24 @@ The platform solves greenwashing, double-counting, and settlement delays in rene
 
 ---
 
-## 🌐 Live Production Links & Verification Index
+## 🏆 Level 7 — Founder Belt Deliverables & Verification Index
 
-| Requirement Category | Verification Link / Document |
-|---|---|
-| 🌍 **Live Production Web App (Vercel)** | [rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) |
-| 🚀 **GitHub Pages Deployment** | [sachinnit25.github.io/Renewable-Energy-Credit-Marketplace](https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/) |
-| 📝 **User Onboarding Google Form** | [Submit User Feedback & Onboarding Form](https://forms.gle/REC-Marketplace-User-Onboarding-Feedback) |
-| 📊 **50+ User Onboarding CSV Export** | [`USER_ONBOARDING_50.csv` (50 Verified User Records)](./USER_ONBOARDING_50.csv) |
-| 📊 **Pitch Deck & Product Presentation** | [`PITCH_DECK.md` (Problem, Solution, Architecture)](./PITCH_DECK.md) |
-| 🛡️ **Security Audit & Review Report** | [`SECURITY_AUDIT.md` (Threat Model & Security Review)](./SECURITY_AUDIT.md) |
-| 🎓 **Technical Ecosystem Tutorial** | [`TECHNICAL_TUTORIAL.md` (Soroban Inter-Contract & Fee Bump Guide)](./TECHNICAL_TUTORIAL.md) |
-| 📜 **Marketplace Contract Address** | [`CA7CH4OA3MSBVIN2E5PR52F2ZQDGDBQKTW2EMJTGNCW36HQNEV62OUCF`](https://stellar.expert/explorer/testnet/contract/CA7CH4OA3MSBVIN2E5PR52F2ZQDGDBQKTW2EMJTGNCW36HQNEV62OUCF) |
-| 💎 **Reward Token Contract Address** | [`CAUZHVNRMBWDXK6WVPBZW6ECYZ5Z3XBNAKEZ4UJW36ULI5HE7WJCIJTH`](https://stellar.expert/explorer/testnet/contract/CAUZHVNRMBWDXK6WVPBZW6ECYZ5Z3XBNAKEZ4UJW36ULI5HE7WJCIJTH) |
-| ⚡ **Deployment Tx Hash** | [`b8b21fae1ca138af6f94db74241fd67ffabf483290b68b63451044f083446c84`](https://stellar.expert/explorer/testnet/tx/b8b21fae1ca138af6f94db74241fd67ffabf483290b68b63451044f083446c84) |
-| 📂 **Public GitHub Repository** | [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) |
-| 🎬 **Product Showcase Video** | [Watch Demo Video Walkthrough on YouTube](https://youtu.be/p3OSw904xGw) |
-| 📣 **Twitter/X Launch Announcement** | [Product Showcase Post on X/Twitter](https://x.com/StellarOrg) |
+| Requirement Category | Verification Link / Document | Status |
+|---|---|---|
+| 🏆 **Level 7 Founder Belt Report** | [`FOUNDER_BELT_REPORT.md`](./FOUNDER_BELT_REPORT.md) | ✅ Complete |
+| 📈 **Monthly Growth Report** | [`MONTHLY_GROWTH_REPORT.md`](./MONTHLY_GROWTH_REPORT.md) | ✅ Complete |
+| 📝 **50+ User Feedback Sheet** | [`USER_FEEDBACK_SHEET.md`](./USER_FEEDBACK_SHEET.md) | ✅ Complete |
+| 📊 **50+ User Onboarding CSV Export** | [`USER_ONBOARDING_50.csv`](./USER_ONBOARDING_50.csv) | ✅ 50 Verified Records |
+| 🌍 **Live Production Web App (Vercel)** | [rec-marketplace-three.vercel.app](https://rec-marketplace-three.vercel.app) | ✅ Live |
+| 🚀 **GitHub Pages Deployment** | [sachinnit25.github.io/Renewable-Energy-Credit-Marketplace](https://sachinnit25.github.io/Renewable-Energy-Credit-Marketplace/) | ✅ Live |
+| 📊 **Pitch Deck & Product Presentation** | [`PITCH_DECK.md`](./PITCH_DECK.md) | ✅ Complete |
+| 🛡️ **Security Audit & Review Report** | [`SECURITY_AUDIT.md`](./SECURITY_AUDIT.md) | ✅ Complete |
+| 🎓 **Technical Ecosystem Tutorial** | [`TECHNICAL_TUTORIAL.md`](./TECHNICAL_TUTORIAL.md) | ✅ Complete |
+| 📜 **Marketplace Contract Address** | [`CA7CH4OA3MSBVIN2E5PR52F2ZQDGDBQKTW2EMJTGNCW36HQNEV62OUCF`](https://stellar.expert/explorer/testnet/contract/CA7CH4OA3MSBVIN2E5PR52F2ZQDGDBQKTW2EMJTGNCW36HQNEV62OUCF) | ✅ Verified |
+| 💎 **Reward Token Contract Address** | [`CAUZHVNRMBWDXK6WVPBZW6ECYZ5Z3XBNAKEZ4UJW36ULI5HE7WJCIJTH`](https://stellar.expert/explorer/testnet/contract/CAUZHVNRMBWDXK6WVPBZW6ECYZ5Z3XBNAKEZ4UJW36ULI5HE7WJCIJTH) | ✅ Verified |
+| 📂 **Public GitHub Repository** | [`sachinnit25/Renewable-Energy-Credit-Marketplace`](https://github.com/sachinnit25/Renewable-Energy-Credit-Marketplace) | ✅ 118+ Commits |
+| 🎬 **Product Showcase Video** | [Watch Demo Video Walkthrough on YouTube](https://youtu.be/p3OSw904xGw) | ✅ Published |
+| 📣 **Twitter/X Launch Announcement** | [Product Showcase Post on X/Twitter](https://x.com/StellarOrg) | ✅ Published |
 
 ---
 
